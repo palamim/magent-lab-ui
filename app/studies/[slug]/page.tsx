@@ -6,6 +6,7 @@ import { describeMethod } from "@/lib/study-text";
 import { DISPLAY_DECIMALS } from "@/lib/display";
 import { Num } from "@/components/num";
 import { MeasurableRateCell, ClusterBootstrapCell } from "@/components/stat-cell";
+import { AgreementChart } from "@/components/agreement-chart";
 
 export function generateStaticParams() {
   return loadStudies().map((study) => ({ slug: studySlug(study) }));
@@ -129,6 +130,17 @@ export default async function StudyPage({
           {DISPLAY_DECIMALS} decimal places for display — see the study
           export for full precision.
         </p>
+
+        <h3 className="mt-6 text-xs font-semibold text-zinc-500">
+          Majority-vote accuracy, by criterion
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-zinc-500">
+          Bar is the point estimate; whiskers are the confidence interval.
+          A criterion with no bar is not measurable — the reason is
+          labelled in its place, not shown as a zero-length bar.
+        </p>
+        <AgreementChart perCriterion={study.validity.perCriterion} />
+
         <div className="mt-3 overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>

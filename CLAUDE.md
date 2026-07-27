@@ -22,6 +22,11 @@ designed to read as a portfolio piece.
 
 - **Next.js 16** (App Router), **React 19**, **TypeScript**
 - **Tailwind CSS v4** for styling — typographic, minimal; no cards, no shadows
+- **Recharts** for charts — a chart is a Client Component (`"use client"`)
+  that receives already-loaded study data as props from its server
+  page; Client Components are prerendered to static HTML same as
+  anything else under `output: "export"`. A chart never fetches
+  anything itself.
 - **Ajv** (2020-12 draft) validates study JSON against the committed
   JSON Schema at build time
 - **json-schema-to-typescript** generates TS types from that schema —
@@ -41,7 +46,8 @@ magent-lab-ui/
 ├── components/
 │   ├── site-header.tsx / site-footer.tsx
 │   ├── num.tsx                   # monospace numeral, decimal-aligned, optional display rounding
-│   └── stat-cell.tsx             # renders a MeasurableRate / ClusterBootstrapAgreement cell
+│   ├── stat-cell.tsx             # renders a MeasurableRate / ClusterBootstrapAgreement cell
+│   └── agreement-chart.tsx        # "use client" — horizontal bar + CI whiskers, per criterion
 ├── data/
 │   └── studies/                  # one committed JSON export per completed study
 ├── schemas/
@@ -103,7 +109,10 @@ displayed numbers outranks everything else.
   When in doubt, show full precision (bare `<Num value={...} />`).
 - "not measurable" is a value, not missing data. Render it as the
   words "not measurable" with its reason. Never as 0, "—", "N/A",
-  or a blank.
+  or a blank. This applies to charts too: a not-measurable criterion
+  is a labelled gap (the reason rendered as text where the mark would
+  be — see `components/agreement-chart.tsx`'s `BarOrGapShape`), never
+  a zero-length bar and never silently dropped from the axis.
 - Never show a point estimate without its confidence interval and n.
 - `limitations` renders in full on the study page itself — never
   folded into the shared site `<footer>`, never collapsed or behind a
@@ -139,12 +148,17 @@ Typographic and minimal: no cards, no shadows, hairline borders only.
 The index page is an entry point, not the destination — enough per
 study (title, date, subject, n, status) to pick one, nothing more.
 Depth belongs on the study page: hypothesis, method, dataset,
-per-criterion results, consistency, and limitations are built. Still
-missing: graphs (the results table is text-only for now, by design —
-see the correctness rules above before adding charts) and a
-divergent-cell explorer for where the judge disagreed with itself or
-with ground truth. Prefer adding real depth to a study page over
-adding another summary column to the index.
+per-criterion results, consistency, and limitations are built. One
+chart exists — majority-vote accuracy per criterion, horizontal bar
+with CI whiskers (`components/agreement-chart.tsx`) — added
+deliberately scoped to that one metric; sensitivity, specificity, and
+cluster-bootstrap agreement are still table-only. Don't add more
+charts speculatively — each one is a real design decision (see the
+not-measurable handling above) and should be a deliberate ask, not a
+drive-by addition. Still missing: a divergent-cell explorer for where
+the judge disagreed with itself or with ground truth. Prefer adding
+real depth to a study page over adding another summary column to the
+index.
 
 ## Repo boundary
 
