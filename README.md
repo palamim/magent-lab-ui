@@ -1,7 +1,7 @@
 # magent-lab-ui
 
-The publication site for magent-lab studies — an evaluation
-harness for LLM judges. magent-lab runs the studies (versioned
+The publication site for [magent-lab](https://github.com/palamim/magent-lab) studies — an evaluation
+harness for LLM judges. [magent-lab](https://github.com/palamim/magent-lab) runs the studies (versioned
 grading criteria, regression tests against labeled fixtures, agreement
 measured against human labels); this repo renders the results:
 per-criterion validity and consistency, confidence intervals, divergent
