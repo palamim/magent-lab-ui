@@ -17,3 +17,11 @@ displayed numbers outranks everything else.
   Do not invent placeholder data, ever.
 - Static export only. No API routes, no server components fetching
   at runtime, no client-side data fetching.
+
+## Repo boundary
+
+This repo is intentionally decoupled from magent-lab. Study JSON and
+the JSON Schema are COPIED IN and committed, never read across repos.
+Netlify builds this repo alone — a cross-repo read fails in CI.
+
+Do not add a submodule, workspace link, or fetch step to magent-lab.
