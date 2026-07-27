@@ -34,19 +34,26 @@ designed to read as a portfolio piece.
 ```
 magent-lab-ui/
 ├── app/
-│   ├── layout.tsx          # root layout, fonts
-│   ├── page.tsx             # study index — entry point, not a dashboard
-│   └── globals.css
+│   ├── layout.tsx              # root layout: fonts, SiteHeader/SiteFooter, metadata
+│   ├── page.tsx                 # study index — entry point, not a dashboard
+│   ├── globals.css              # light theme only, no dark: variants
+│   └── studies/[slug]/page.tsx  # study detail page, one per study.studyId
+├── components/
+│   ├── site-header.tsx / site-footer.tsx
+│   ├── num.tsx                   # monospace numeral, decimal-aligned, optional display rounding
+│   └── stat-cell.tsx             # renders a MeasurableRate / ClusterBootstrapAgreement cell
 ├── data/
-│   └── studies/              # one committed JSON export per completed study
+│   └── studies/                  # one committed JSON export per completed study
 ├── schemas/
 │   └── judge-study-export.schema.json   # JSON Schema the exports conform to
 ├── lib/
-│   ├── studies.ts            # build-time loader: reads + validates data/studies/*.json
-│   └── generated/             # `npm run generate:types` output — gitignored, never hand-edit
+│   ├── studies.ts                 # build-time loader: reads + validates data/studies/*.json
+│   ├── study-text.ts              # derives Method prose from a study's own fields
+│   ├── display.ts                  # DISPLAY_DECIMALS — the one shared display-rounding constant
+│   └── generated/                  # `npm run generate:types` output — gitignored, never hand-edit
 ├── public/
-├── AGENTS.md                  # Next.js-version-specific agent instructions
-└── CLAUDE.md                  # this file
+├── AGENTS.md                       # Next.js-version-specific agent instructions
+└── CLAUDE.md                       # this file
 ```
 
 ## Data flow
@@ -84,29 +91,60 @@ build time, nothing at runtime:
 This site renders completed research studies. Correctness of
 displayed numbers outranks everything else.
 
-- Every displayed number comes from the study JSON. Never compute,
-  round, reformat, or hardcode a statistic in a component.
+- Every displayed number comes from the study JSON. Never compute a
+  statistic that isn't already a field in the export — no derived
+  metrics, no client-side math.
+- Full precision from the JSON is the source of truth, always. Display
+  rounding is allowed **only** where explicitly opted in via
+  `<Num decimals={DISPLAY_DECIMALS} />` (`lib/display.ts` — currently
+  3dp, used by the per-criterion results table and the self-agreement
+  kappa table) — never silently, never as a one-off hardcoded number,
+  and the underlying value is never mutated, only its rendered string.
+  When in doubt, show full precision (bare `<Num value={...} />`).
 - "not measurable" is a value, not missing data. Render it as the
   words "not measurable" with its reason. Never as 0, "—", "N/A",
   or a blank.
 - Never show a point estimate without its confidence interval and n.
-- `limitations` renders on the study page itself, above the fold —
-  never in a footer, never collapsed by default.
+- `limitations` renders in full on the study page itself — never
+  folded into the shared site `<footer>`, never collapsed or behind a
+  toggle by default. Where it sits among the other sections can
+  change (currently: last, after Consistency); that it's always fully
+  visible cannot.
 - If the JSON lacks a field a component wants, the component adapts.
-  Do not invent placeholder data, ever.
+  Do not invent placeholder data, ever. Method prose (`lib/study-text.ts`)
+  is the one exception: it's assembled from existing fields as
+  factual prose, not free text. Hypothesis has no source field at
+  all — it renders "not provided by this export" until magent-lab's
+  export adds one; don't write hypothesis text by hand.
+- Numerals are monospace and decimal-aligned (`components/num.tsx`),
+  everywhere a number is displayed.
+- Non-obvious notation gets a plain-language caption next to it (e.g.
+  what `[low, high]` means, what `n=` counts, what a split label like
+  "4-1" means, what the No/Yes columns in class balance count). Prefer
+  quoting the schema's own `description` strings where one exists.
 - Static export only. No API routes, no server components fetching
   at runtime, no client-side data fetching.
+
+## Design
+
+Light theme only — no `dark:` variants, no `prefers-color-scheme`
+handling. `app/globals.css` sets `color-scheme: light` explicitly.
+This is a deliberate, revisit-before-changing decision, not an
+oversight.
+
+Typographic and minimal: no cards, no shadows, hairline borders only.
 
 ## Where this is headed
 
 The index page is an entry point, not the destination — enough per
 study (title, date, subject, n, status) to pick one, nothing more.
-Depth belongs on the study page (not yet built): full validity and
-consistency breakdowns, graphs of per-criterion rates with their
-intervals, a divergent-cell explorer for where the judge disagreed
-with itself or with ground truth, and `limitations` above the fold.
-Prefer adding real depth to a study page over adding another summary
-column to the index.
+Depth belongs on the study page: hypothesis, method, dataset,
+per-criterion results, consistency, and limitations are built. Still
+missing: graphs (the results table is text-only for now, by design —
+see the correctness rules above before adding charts) and a
+divergent-cell explorer for where the judge disagreed with itself or
+with ground truth. Prefer adding real depth to a study page over
+adding another summary column to the index.
 
 ## Repo boundary
 

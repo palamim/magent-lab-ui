@@ -44,3 +44,11 @@ function ajvErrorsText(errors: ErrorObject[] | null | undefined): string {
     .map((e) => `  ${e.instancePath || "/"} ${e.message}`)
     .join("\n");
 }
+
+export function studySlug(study: ConventionsJudgeStudyExport): string {
+  return study.studyId;
+}
+
+export function getStudy(slug: string): ConventionsJudgeStudyExport | undefined {
+  return loadStudies().find((study) => studySlug(study) === slug);
+}

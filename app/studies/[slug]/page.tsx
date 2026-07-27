@@ -1,0 +1,241 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import type { Metadata } from "next";
+import { getStudy, loadStudies, studySlug } from "@/lib/studies";
+import { describeMethod } from "@/lib/study-text";
+import { DISPLAY_DECIMALS } from "@/lib/display";
+import { Num } from "@/components/num";
+import { MeasurableRateCell, ClusterBootstrapCell } from "@/components/stat-cell";
+
+export function generateStaticParams() {
+  return loadStudies().map((study) => ({ slug: studySlug(study) }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const study = getStudy(slug);
+  return { title: study ? study.studyId : "Study not found" };
+}
+
+export default async function StudyPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
+  const study = getStudy(slug);
+
+  if (!study) {
+    notFound();
+  }
+
+  return (
+    <>
+      <Link
+        href="/"
+        className="text-xs text-zinc-500 hover:text-black"
+      >
+        ← Studies
+      </Link>
+
+      <h1 className="mt-4 font-mono text-xl font-semibold tracking-tight text-black">
+        {study.studyId}
+      </h1>
+      <p className="mt-1 text-xs text-zinc-500">
+        {study.generatedAt} · {study.subject.subjectKey} ({study.subject.model})
+      </p>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          Hypothesis
+        </h2>
+        <p className="mt-3 text-sm italic text-zinc-500">
+          not provided by this export
+        </p>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          Method
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-zinc-800">
+          {describeMethod(study)}
+        </p>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          Dataset
+        </h2>
+        <dl className="mt-3 flex gap-8 text-sm">
+          <div>
+            <dt className="text-xs text-zinc-500">Diffs</dt>
+            <dd className="font-mono">
+              <Num value={study.dataset.nDiffs} />
+            </dd>
+          </div>
+          <div>
+            <dt className="text-xs text-zinc-500">Replicates per diff</dt>
+            <dd className="font-mono">
+              <Num value={study.dataset.replicatesPerDiff} />
+            </dd>
+          </div>
+        </dl>
+
+        <p className="mt-6 text-xs text-zinc-500">
+          No / Yes are the number of diffs whose expected (ground-truth)
+          label is &quot;no&quot; or &quot;yes&quot; for that criterion — not
+          the judge&apos;s output.
+        </p>
+        <table className="mt-2 w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
+              <th className="py-2 pr-4 font-medium">Criterion</th>
+              <th className="py-2 pr-4 font-medium">No</th>
+              <th className="py-2 font-medium">Yes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {study.dataset.classBalance.map((entry) => (
+              <tr key={entry.criterion} className="border-b border-black/10">
+                <td className="py-2 pr-4">{entry.criterion}</td>
+                <td className="py-2 pr-4">
+                  <Num value={entry.noCount} />
+                </td>
+                <td className="py-2">
+                  <Num value={entry.yesCount} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          Per-criterion results
+        </h2>
+        <p className="mt-3 text-xs leading-5 text-zinc-500">
+          Each cell shows the point estimate, its confidence interval in
+          brackets, and n — the diffs it&apos;s computed over (nClusters for
+          cluster-bootstrap agreement, which treats replicates within a diff
+          as clustered). Sensitivity is recall on expected-&quot;no&quot;
+          (violation) diffs; specificity is recall on
+          expected-&quot;yes&quot; (compliant) diffs. Values are rounded to{" "}
+          {DISPLAY_DECIMALS} decimal places for display — see the study
+          export for full precision.
+        </p>
+        <div className="mt-3 overflow-x-auto">
+          <table className="w-full min-w-[640px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
+                <th className="py-2 pr-4 font-medium">Criterion</th>
+                <th className="py-2 pr-4 font-medium">
+                  Majority-vote accuracy
+                </th>
+                <th className="py-2 pr-4 font-medium">Sensitivity</th>
+                <th className="py-2 pr-4 font-medium">Specificity</th>
+                <th className="py-2 font-medium">
+                  Cluster-bootstrap agreement
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {study.validity.perCriterion.map((row) => (
+                <tr
+                  key={row.criterion}
+                  className="border-b border-black/10 align-top"
+                >
+                  <td className="py-3 pr-4">{row.criterion}</td>
+                  <td className="py-3 pr-4">
+                    <MeasurableRateCell rate={row.majorityVoteAccuracy} />
+                  </td>
+                  <td className="py-3 pr-4">
+                    <MeasurableRateCell rate={row.sensitivity} />
+                  </td>
+                  <td className="py-3 pr-4">
+                    <MeasurableRateCell rate={row.specificity} />
+                  </td>
+                  <td className="py-3">
+                    <ClusterBootstrapCell agreement={row.clusterBootstrapAgreement} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          Consistency
+        </h2>
+
+        <h3 className="mt-4 text-xs font-semibold text-zinc-500">
+          Split histogram
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-zinc-500">
+          Each labeled diff was judged {study.dataset.replicatesPerDiff}{" "}
+          times; a split label is the majority-minority breakdown of those
+          replicate calls for a (diff, criterion) cell — e.g. &quot;4-1&quot;
+          means 4 replicates agreed and 1 diverged.
+        </p>
+        <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
+          {Object.entries(study.consistency.splitHistogram).map(
+            ([split, count]) => (
+              <li key={split} className="font-mono">
+                {split}: <Num value={count as number} />
+              </li>
+            ),
+          )}
+        </ul>
+
+        <h3 className="mt-6 text-xs font-semibold text-zinc-500">
+          Self-agreement (kappa) by criterion
+        </h3>
+        <p className="mt-1 text-xs leading-5 text-zinc-500">
+          Chance-corrects the judge&apos;s replicate calls against its own
+          marginal distribution for that criterion — a relative signal
+          across criteria, not an absolute one; see Limitations below.
+          Rounded to {DISPLAY_DECIMALS} decimal places for display.
+        </p>
+        <table className="mt-2 w-full border-collapse text-sm">
+          <tbody>
+            {study.consistency.perCriterion.map((row) => (
+              <tr key={row.criterion} className="border-b border-black/10">
+                <td className="py-2 pr-4">{row.criterion}</td>
+                <td className="py-2">
+                  {row.selfAgreementKappa === null ? (
+                    <span className="text-xs text-zinc-600">
+                      {row.reason}
+                    </span>
+                  ) : (
+                    <Num
+                      value={row.selfAgreementKappa}
+                      decimals={DISPLAY_DECIMALS}
+                    />
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
+
+      <section className="mt-10 mb-16">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          Limitations
+        </h2>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-zinc-800">
+          {study.limitations.map((limitation, i) => (
+            <li key={i}>{limitation}</li>
+          ))}
+        </ul>
+      </section>
+    </>
+  );
+}
