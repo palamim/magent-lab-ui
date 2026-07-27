@@ -47,7 +47,8 @@ magent-lab-ui/
 │   ├── site-header.tsx / site-footer.tsx
 │   ├── num.tsx                   # monospace numeral, decimal-aligned, optional display rounding
 │   ├── stat-cell.tsx             # renders a MeasurableRate / ClusterBootstrapAgreement cell
-│   └── agreement-chart.tsx        # "use client" — horizontal bar + CI whiskers, per criterion
+│   ├── rate-bar-chart.tsx         # "use client" — generic horizontal bar + CI whiskers, per criterion
+│   └── figure.tsx                 # <Figure>/<TableCaption> — numbered, centered captions
 ├── data/
 │   └── studies/                  # one committed JSON export per completed study
 ├── schemas/
@@ -55,6 +56,7 @@ magent-lab-ui/
 ├── lib/
 │   ├── studies.ts                 # build-time loader: reads + validates data/studies/*.json
 │   ├── study-text.ts              # derives Method prose from a study's own fields
+│   ├── chart-data.ts              # normalizes a validity metric into RateBarChart's row shape
 │   ├── display.ts                  # DISPLAY_DECIMALS — the one shared display-rounding constant
 │   └── generated/                  # `npm run generate:types` output — gitignored, never hand-edit
 ├── public/
@@ -111,7 +113,7 @@ displayed numbers outranks everything else.
   words "not measurable" with its reason. Never as 0, "—", "N/A",
   or a blank. This applies to charts too: a not-measurable criterion
   is a labelled gap (the reason rendered as text where the mark would
-  be — see `components/agreement-chart.tsx`'s `BarOrGapShape`), never
+  be — see `components/rate-bar-chart.tsx`'s `BarOrGapShape`), never
   a zero-length bar and never silently dropped from the axis.
 - Never show a point estimate without its confidence interval and n.
 - `limitations` renders in full on the study page itself — never
@@ -131,6 +133,12 @@ displayed numbers outranks everything else.
   what `[low, high]` means, what `n=` counts, what a split label like
   "4-1" means, what the No/Yes columns in class balance count). Prefer
   quoting the schema's own `description` strings where one exists.
+- Every table and figure is named and numbered — "Table N."/"Figure N."
+  via `components/figure.tsx`, sequential in document order, captioned
+  with what it shows and any figure-specific caveat. A caption that
+  claims a precision/rounding behavior must match what the component
+  actually does — cross-check `DISPLAY_DECIMALS` usage, don't assert
+  "full precision" for anything rendered through `<Num decimals={...} />`.
 - Static export only. No API routes, no server components fetching
   at runtime, no client-side data fetching.
 
@@ -143,16 +151,34 @@ oversight.
 
 Typographic and minimal: no cards, no shadows, hairline borders only.
 
+The study page reads as a research document, not a dashboard: a
+numbered Contents nav up top linking to every numbered section, each
+`<h2>` prefixed with its section number, and every table/figure named,
+numbered, and captioned (see the correctness rules above). Figures
+are centered in a narrower column than the full-width tables and
+body text — that contrast is deliberate, it's what visually marks
+something as a figure.
+
+In `rate-bar-chart.tsx`, the CI whisker (`stroke="#18181b"`, near-black)
+renders on top of the bar (Recharts paints `<ErrorBar>` after the bar
+rectangles), but the whisker's near-side segment sits *inside* the
+bar's horizontal extent. If the bar fill is the same near-black as the
+whisker, that segment reads as invisible — same color painted over
+itself. The bar must stay a visibly lighter gray (`fill="#d4d4d8"`)
+so the whisker is legible on both sides of the point estimate, not
+just where it extends past the bar into open space.
+
 ## Where this is headed
 
 The index page is an entry point, not the destination — enough per
 study (title, date, subject, n, status) to pick one, nothing more.
-Depth belongs on the study page: hypothesis, method, dataset,
-per-criterion results, consistency, and limitations are built. One
-chart exists — majority-vote accuracy per criterion, horizontal bar
-with CI whiskers (`components/agreement-chart.tsx`) — added
-deliberately scoped to that one metric; sensitivity, specificity, and
-cluster-bootstrap agreement are still table-only. Don't add more
+Depth belongs on the study page: hypothesis, method, dataset (Table 1),
+per-criterion results (Figures 1–4 plus Table 2), consistency (Table 3),
+and limitations are built, numbered, and cross-linked via the Contents
+nav. Figures 1–4 cover all four validity metrics — majority-vote
+accuracy, sensitivity, specificity, cluster-bootstrap agreement — each
+a horizontal bar with CI whiskers built on the shared
+`components/rate-bar-chart.tsx` + `lib/chart-data.ts`. Don't add more
 charts speculatively — each one is a real design decision (see the
 not-measurable handling above) and should be a deliberate ask, not a
 drive-by addition. Still missing: a divergent-cell explorer for where

@@ -4,9 +4,16 @@ import type { Metadata } from "next";
 import { getStudy, loadStudies, studySlug } from "@/lib/studies";
 import { describeMethod } from "@/lib/study-text";
 import { DISPLAY_DECIMALS } from "@/lib/display";
+import {
+  clusterBootstrapRows,
+  majorityVoteAccuracyRows,
+  sensitivityRows,
+  specificityRows,
+} from "@/lib/chart-data";
 import { Num } from "@/components/num";
 import { MeasurableRateCell, ClusterBootstrapCell } from "@/components/stat-cell";
-import { AgreementChart } from "@/components/agreement-chart";
+import { RateBarChart } from "@/components/rate-bar-chart";
+import { Figure, TableCaption } from "@/components/figure";
 
 export function generateStaticParams() {
   return loadStudies().map((study) => ({ slug: studySlug(study) }));
@@ -22,6 +29,15 @@ export async function generateMetadata({
   return { title: study ? study.studyId : "Study not found" };
 }
 
+const CONTENTS = [
+  { id: "hypothesis", label: "Hypothesis" },
+  { id: "method", label: "Method" },
+  { id: "dataset", label: "Dataset" },
+  { id: "results", label: "Per-criterion results" },
+  { id: "consistency", label: "Consistency" },
+  { id: "limitations", label: "Limitations" },
+];
+
 export default async function StudyPage({
   params,
 }: {
@@ -36,10 +52,7 @@ export default async function StudyPage({
 
   return (
     <>
-      <Link
-        href="/"
-        className="text-xs text-zinc-500 hover:text-black"
-      >
+      <Link href="/" className="text-xs text-zinc-500 hover:text-black">
         ← Studies
       </Link>
 
@@ -50,27 +63,42 @@ export default async function StudyPage({
         {study.generatedAt} · {study.subject.subjectKey} ({study.subject.model})
       </p>
 
-      <section className="mt-10">
+      <nav aria-label="Contents" className="mt-8 border-y border-black/10 py-4">
+        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+          Contents
+        </p>
+        <ol className="mt-2 space-y-1 text-sm text-zinc-700">
+          {CONTENTS.map((item, i) => (
+            <li key={item.id}>
+              <a href={`#${item.id}`} className="hover:underline">
+                {i + 1}. {item.label}
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+
+      <section id="hypothesis" className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Hypothesis
+          1. Hypothesis
         </h2>
         <p className="mt-3 text-sm italic text-zinc-500">
           not provided by this export
         </p>
       </section>
 
-      <section className="mt-10">
+      <section id="method" className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Method
+          2. Method
         </h2>
         <p className="mt-3 text-sm leading-6 text-zinc-800">
           {describeMethod(study)}
         </p>
       </section>
 
-      <section className="mt-10">
+      <section id="dataset" className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Dataset
+          3. Dataset
         </h2>
         <dl className="mt-3 flex gap-8 text-sm">
           <div>
@@ -87,12 +115,7 @@ export default async function StudyPage({
           </div>
         </dl>
 
-        <p className="mt-6 text-xs text-zinc-500">
-          No / Yes are the number of diffs whose expected (ground-truth)
-          label is &quot;no&quot; or &quot;yes&quot; for that criterion — not
-          the judge&apos;s output.
-        </p>
-        <table className="mt-2 w-full border-collapse text-sm">
+        <table className="mt-6 w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
               <th className="py-2 pr-4 font-medium">Criterion</th>
@@ -114,34 +137,65 @@ export default async function StudyPage({
             ))}
           </tbody>
         </table>
+        <div className="mt-2">
+          <TableCaption
+            number={1}
+            title="Class balance, by criterion"
+            note={
+              <>
+                No / Yes are the number of diffs whose expected
+                (ground-truth) label is &quot;no&quot; or &quot;yes&quot; for
+                that criterion — not the judge&apos;s output
+              </>
+            }
+          />
+        </div>
       </section>
 
-      <section className="mt-10">
+      <section id="results" className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Per-criterion results
+          4. Per-criterion results
         </h2>
-        <p className="mt-3 text-xs leading-5 text-zinc-500">
-          Each cell shows the point estimate, its confidence interval in
-          brackets, and n — the diffs it&apos;s computed over (nClusters for
-          cluster-bootstrap agreement, which treats replicates within a diff
-          as clustered). Sensitivity is recall on expected-&quot;no&quot;
-          (violation) diffs; specificity is recall on
-          expected-&quot;yes&quot; (compliant) diffs. Values are rounded to{" "}
-          {DISPLAY_DECIMALS} decimal places for display — see the study
-          export for full precision.
+        <p className="mt-3 text-sm leading-6 text-zinc-800">
+          Bars are the point estimate; whiskers are the confidence interval.
+          A criterion with no bar is not measurable — the reason is labelled
+          in its place, not shown as a zero-length bar. The table below (
+          <a href="#table-2" className="underline underline-offset-2">
+            Table 2
+          </a>
+          ) gives the exact figures behind every bar — the study export has
+          full precision.
         </p>
 
-        <h3 className="mt-6 text-xs font-semibold text-zinc-500">
-          Majority-vote accuracy, by criterion
-        </h3>
-        <p className="mt-1 text-xs leading-5 text-zinc-500">
-          Bar is the point estimate; whiskers are the confidence interval.
-          A criterion with no bar is not measurable — the reason is
-          labelled in its place, not shown as a zero-length bar.
-        </p>
-        <AgreementChart perCriterion={study.validity.perCriterion} />
+        <Figure number={1} title="Majority-vote accuracy, by criterion">
+          <RateBarChart rows={majorityVoteAccuracyRows(study.validity.perCriterion)} />
+        </Figure>
 
-        <div className="mt-3 overflow-x-auto">
+        <Figure
+          number={2}
+          title="Sensitivity, by criterion"
+          note={<>recall on expected-&quot;no&quot; (violation) diffs</>}
+        >
+          <RateBarChart rows={sensitivityRows(study.validity.perCriterion)} />
+        </Figure>
+
+        <Figure
+          number={3}
+          title="Specificity, by criterion"
+          note={<>recall on expected-&quot;yes&quot; (compliant) diffs</>}
+        >
+          <RateBarChart rows={specificityRows(study.validity.perCriterion)} />
+        </Figure>
+
+        <Figure
+          number={4}
+          title="Cluster-bootstrap agreement, by criterion"
+          note={<>treats replicates within a diff as clustered</>}
+        >
+          <RateBarChart rows={clusterBootstrapRows(study.validity.perCriterion)} />
+        </Figure>
+
+        <div id="table-2" className="mt-10 overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
@@ -180,11 +234,26 @@ export default async function StudyPage({
             </tbody>
           </table>
         </div>
+        <div className="mt-2">
+          <TableCaption
+            number={2}
+            title="Per-criterion results"
+            note={
+              <>
+                Underlies Figures 1–4. Each cell: point estimate, confidence
+                interval in brackets, and n — the diffs it&apos;s computed
+                over (nClusters for cluster-bootstrap agreement). Both this
+                table and Figures 1–4 round to {DISPLAY_DECIMALS} decimal
+                places for display; see the study export for full precision
+              </>
+            }
+          />
+        </div>
       </section>
 
-      <section className="mt-10">
+      <section id="consistency" className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Consistency
+          5. Consistency
         </h2>
 
         <h3 className="mt-4 text-xs font-semibold text-zinc-500">
@@ -209,12 +278,6 @@ export default async function StudyPage({
         <h3 className="mt-6 text-xs font-semibold text-zinc-500">
           Self-agreement (kappa) by criterion
         </h3>
-        <p className="mt-1 text-xs leading-5 text-zinc-500">
-          Chance-corrects the judge&apos;s replicate calls against its own
-          marginal distribution for that criterion — a relative signal
-          across criteria, not an absolute one; see Limitations below.
-          Rounded to {DISPLAY_DECIMALS} decimal places for display.
-        </p>
         <table className="mt-2 w-full border-collapse text-sm">
           <tbody>
             {study.consistency.perCriterion.map((row) => (
@@ -236,11 +299,28 @@ export default async function StudyPage({
             ))}
           </tbody>
         </table>
+        <div className="mt-2">
+          <TableCaption
+            number={3}
+            title="Self-agreement (kappa), by criterion"
+            note={
+              <>
+                Chance-corrects the judge&apos;s replicate calls against its
+                own marginal distribution for that criterion — a relative
+                signal across criteria, not an absolute one; see{" "}
+                <a href="#limitations" className="underline underline-offset-2">
+                  Limitations
+                </a>
+                . Rounded to {DISPLAY_DECIMALS} decimal places for display
+              </>
+            }
+          />
+        </div>
       </section>
 
-      <section className="mt-10 mb-16">
+      <section id="limitations" className="mt-10 mb-16">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          Limitations
+          6. Limitations
         </h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-zinc-800">
           {study.limitations.map((limitation, i) => (
