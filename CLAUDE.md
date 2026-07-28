@@ -171,8 +171,8 @@ The index page is an entry point, not the destination — enough per
 study (title, date, subject, n, status) to pick one, nothing more.
 Depth belongs on the study page: hypothesis, method, dataset (Table 1),
 per-criterion results (Figures 1–4 plus Table 2), consistency (Table 3),
-and limitations are built, numbered, and cross-linked via the Contents
-nav. Figures 1–4 cover all four validity metrics — majority-vote
+conclusions, and limitations are built, numbered, and cross-linked via
+the Contents nav. Figures 1–4 cover all four validity metrics — majority-vote
 accuracy, sensitivity, specificity, cluster-bootstrap agreement — each
 a horizontal bar with CI whiskers built on the shared
 `components/rate-bar-chart.tsx` + `lib/chart-data.ts`. Don't add more

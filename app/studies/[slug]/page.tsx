@@ -34,6 +34,7 @@ const CONTENTS = [
   { id: "dataset", label: "Dataset" },
   { id: "results", label: "Per-criterion results" },
   { id: "consistency", label: "Consistency" },
+  { id: "conclusions", label: "Conclusions" },
   { id: "limitations", label: "Limitations" },
 ];
 
@@ -319,9 +320,20 @@ export default async function StudyPage({
         </div>
       </section>
 
+      <section id="conclusions" className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          6. Conclusions
+        </h2>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-zinc-800">
+          {study.conclusions.map((conclusion, i) => (
+            <li key={i}>{conclusion}</li>
+          ))}
+        </ul>
+      </section>
+
       <section id="limitations" className="mt-10 mb-16">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          6. Limitations
+          7. Limitations
         </h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-zinc-800">
           {study.limitations.map((limitation, i) => (
