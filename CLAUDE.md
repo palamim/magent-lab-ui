@@ -55,7 +55,6 @@ magent-lab-ui/
 │   └── judge-study-export.schema.json   # JSON Schema the exports conform to
 ├── lib/
 │   ├── studies.ts                 # build-time loader: reads + validates data/studies/*.json
-│   ├── study-text.ts              # derives Method prose from a study's own fields
 │   ├── chart-data.ts              # normalizes a validity metric into RateBarChart's row shape
 │   ├── display.ts                  # DISPLAY_DECIMALS — the one shared display-rounding constant
 │   └── generated/                  # `npm run generate:types` output — gitignored, never hand-edit
@@ -122,11 +121,9 @@ displayed numbers outranks everything else.
   change (currently: last, after Consistency); that it's always fully
   visible cannot.
 - If the JSON lacks a field a component wants, the component adapts.
-  Do not invent placeholder data, ever. Method prose (`lib/study-text.ts`)
-  is the one exception: it's assembled from existing fields as
-  factual prose, not free text. Hypothesis has no source field at
-  all — it renders "not provided by this export" until magent-lab's
-  export adds one; don't write hypothesis text by hand.
+  Do not invent placeholder data, ever. `hypothesis` (array of claim
+  strings) and `methodology` (prose) are authored by magent-lab and
+  rendered as-is — the UI does not synthesize or reword them.
 - Numerals are monospace and decimal-aligned (`components/num.tsx`),
   everywhere a number is displayed.
 - Non-obvious notation gets a plain-language caption next to it (e.g.

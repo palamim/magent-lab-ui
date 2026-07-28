@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getStudy, loadStudies, studySlug } from "@/lib/studies";
-import { describeMethod } from "@/lib/study-text";
 import { DISPLAY_DECIMALS } from "@/lib/display";
 import {
   clusterBootstrapRows,
@@ -82,9 +81,11 @@ export default async function StudyPage({
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
           1. Hypothesis
         </h2>
-        <p className="mt-3 text-sm italic text-zinc-500">
-          not provided by this export
-        </p>
+        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-zinc-800">
+          {study.hypothesis.map((claim, i) => (
+            <li key={i}>{claim}</li>
+          ))}
+        </ul>
       </section>
 
       <section id="method" className="mt-10">
@@ -92,7 +93,7 @@ export default async function StudyPage({
           2. Method
         </h2>
         <p className="mt-3 text-sm leading-6 text-zinc-800">
-          {describeMethod(study)}
+          {study.methodology}
         </p>
       </section>
 
