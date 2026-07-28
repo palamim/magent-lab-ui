@@ -3,9 +3,11 @@
 import type { BarShapeProps } from "recharts";
 
 const MAX_LABEL_CHARS = 18;
+const AXIS_CHAR_WIDTH_PX = 6.5;
+const AXIS_LABEL_PADDING_PX = 10;
 
 /** Greedily wraps a criterion name to fit the fixed-width Y axis without overflow. */
-function wrapLabel(label: string): string[] {
+export function wrapLabel(label: string): string[] {
   const words = label.split(" ");
   const lines: string[] = [];
   let current = "";
@@ -20,6 +22,21 @@ function wrapLabel(label: string): string[] {
   }
   if (current) lines.push(current);
   return lines;
+}
+
+/**
+ * Sizes the Y axis to the labels actually being rendered (post-wrap, post
+ * -shortening) instead of a fixed guess — a fixed width leaves a block of
+ * blank space between short labels and the wall whenever a longer label
+ * elsewhere isn't driving the reservation.
+ */
+export function estimateYAxisWidth(labels: string[]): number {
+  const maxChars = labels.reduce(
+    (max, label) =>
+      wrapLabel(label).reduce((lineMax, line) => Math.max(lineMax, line.length), max),
+    0,
+  );
+  return Math.ceil(maxChars * AXIS_CHAR_WIDTH_PX) + AXIS_LABEL_PADDING_PX;
 }
 
 export function CriterionTick(props: {

@@ -18,11 +18,13 @@ export function Figure({
   return (
     <figure className="mt-8">
       <div className={measure}>{children}</div>
-      <figcaption className={`mt-2 font-sans text-xs leading-5 text-zinc-500 ${measure}`}>
-        <span className="font-semibold italic text-zinc-700">
+      <figcaption
+        className={`mt-2 font-sans text-xs leading-5 text-zinc-500 ${measure}`}
+      >
+        <div className="font-semibold italic text-zinc-700">
           Figure {number}. {title}
-        </span>
-        {note ? <>. {note}</> : null}
+        </div>
+        {note ? <div className="italic">{note}</div> : null}
       </figcaption>
     </figure>
   );
@@ -69,10 +71,10 @@ export function TableCaption({
 }) {
   return (
     <p className="font-sans text-xs leading-5 text-zinc-500">
-      <span className="font-semibold italic text-zinc-700">
+      <span className="block font-semibold italic text-zinc-700">
         Table {number}. {title}
       </span>
-      {note ? <>. {note}</> : null}
+      {note ? <span className="block italic">{note}</span> : null}
     </p>
   );
 }

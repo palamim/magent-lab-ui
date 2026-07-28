@@ -204,8 +204,8 @@ export default async function StudyPage({
           title="Per-criterion validity, by metric"
           note={
             <>
-              all four share the same 0–1 scale and criterion order;
-              criterion names are abbreviated to their first word — see{" "}
+              All four share the same 0–1 scale and criterion order; criterion
+              names are abbreviated to their first word — see{" "}
               <a href="#table-2" className="underline underline-offset-2">
                 Table 2
               </a>{" "}
@@ -327,7 +327,7 @@ export default async function StudyPage({
         <Figure
           number={2}
           title="Split histogram, across all (diff, criterion) cells"
-          note={<>a &quot;5-0&quot; cell was unanimous; anything else split</>}
+          note={<>A &quot;5-0&quot; cell was unanimous; anything else split</>}
           wide
         >
           <ChartPanel title="Split histogram">
@@ -344,17 +344,28 @@ export default async function StudyPage({
             <>
               -1 marks perfect disagreement, 0 chance-level agreement, 1 perfect
               agreement; a criterion with no bar has a degenerate marginal — the
-              reason is labelled in its place
+              reason is labelled in its place. Criterion names are abbreviated
+              to their first word — see{" "}
+              <a href="#table-3" className="underline underline-offset-2">
+                Table 3
+              </a>{" "}
+              for the full names
             </>
           }
           wide
         >
           <ChartPanel title="Self-agreement (kappa)">
-            <KappaBarChart rows={kappaRows(study.consistency.perCriterion)} />
+            <KappaBarChart
+              rows={kappaRows(study.consistency.perCriterion)}
+              shortenCriterion
+            />
           </ChartPanel>
         </Figure>
 
-        <div className="mt-10 overflow-hidden rounded-xl border border-black/10">
+        <div
+          id="table-3"
+          className="mt-10 overflow-hidden rounded-xl border border-black/10"
+        >
           <table className="text-sm">
             <thead>
               <tr className="text-left font-sans text-xs uppercase tracking-wide text-zinc-500">

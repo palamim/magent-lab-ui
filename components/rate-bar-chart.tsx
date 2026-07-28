@@ -10,7 +10,7 @@ import {
   YAxis,
 } from "recharts";
 import type { ChartRow } from "@/lib/chart-data";
-import { BarOrGapShape, CriterionTick } from "./chart-primitives";
+import { BarOrGapShape, CriterionTick, estimateYAxisWidth } from "./chart-primitives";
 
 type BarDatum = {
   criterion: string;
@@ -54,7 +54,7 @@ export function RateBarChart({
 }) {
   const data = rows.map((row) => toBarDatum(row, Boolean(shortenCriterion)));
   const height = data.length * ROW_HEIGHT + 32;
-  const yAxisWidth = shortenCriterion ? 70 : 110;
+  const yAxisWidth = estimateYAxisWidth(data.map((d) => d.criterion));
 
   return (
     <div style={{ width: "100%", height }}>

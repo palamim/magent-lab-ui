@@ -9,7 +9,7 @@ import {
   YAxis,
 } from "recharts";
 import type { KappaChartRow } from "@/lib/chart-data";
-import { BarOrGapShape, CriterionTick } from "./chart-primitives";
+import { BarOrGapShape, CriterionTick, estimateYAxisWidth } from "./chart-primitives";
 
 type BarDatum = {
   criterion: string;
@@ -21,21 +21,33 @@ type BarDatum = {
 const ROW_HEIGHT = 56;
 const AXIS_TICKS = [-1, -0.5, 0, 0.5, 1];
 
-function toBarDatum(row: KappaChartRow): BarDatum {
+function toBarDatum(row: KappaChartRow, shortenCriterion: boolean): BarDatum {
+  const criterion = shortenCriterion
+    ? row.criterion.split(" ")[0]
+    : row.criterion;
+
   if (row.value === null) {
     return {
-      criterion: row.criterion,
+      criterion,
       value: 0,
       notMeasurable: true,
       reason: row.reason,
     };
   }
-  return { criterion: row.criterion, value: row.value, notMeasurable: false };
+  return { criterion, value: row.value, notMeasurable: false };
 }
 
-export function KappaBarChart({ rows }: { rows: KappaChartRow[] }) {
-  const data = rows.map(toBarDatum);
+export function KappaBarChart({
+  rows,
+  shortenCriterion,
+}: {
+  rows: KappaChartRow[];
+  /** Y-axis label is the criterion's first word only — for tight grid layouts. */
+  shortenCriterion?: boolean;
+}) {
+  const data = rows.map((row) => toBarDatum(row, Boolean(shortenCriterion)));
   const height = data.length * ROW_HEIGHT + 32;
+  const yAxisWidth = estimateYAxisWidth(data.map((d) => d.criterion));
 
   return (
     <div style={{ width: "100%", height }}>
@@ -57,7 +69,7 @@ export function KappaBarChart({ rows }: { rows: KappaChartRow[] }) {
           <YAxis
             type="category"
             dataKey="criterion"
-            width={110}
+            width={yAxisWidth}
             stroke="#71717a"
             tick={<CriterionTick />}
           />

@@ -219,18 +219,35 @@ text — pass `wide` when its content needs the full content width (a
 multi-column grid, or a single chart that benefits from more
 horizontal room, e.g. the current study's Figures 1–3). Figure and
 Table captions are left-aligned, not centered; "Figure N. Title" /
-"Table N. Title" is bold+italic together, the trailing note stays
-regular weight — don't bold or italicize the note, only the
-number+title span.
+"Table N. Title" is bold+italic on its own line, the note is a full
+sentence (capitalized) on the line below it, italic but not bold —
+the two are visually distinct blocks, not one run-on caption sentence
+joined by a period.
 
-Criterion names can get long ("Structure and Placement Rules"). In a
-cramped layout — the `RateBarChart` panels inside Figure 1's grid —
-`shortenCriterion` truncates the Y-axis label to the criterion's first
-word ("Structure", "Naming", "File", "Code"); the figure's own caption
-must then point to wherever the full names still appear (Table 2, in
-Figure 1's case) so the abbreviation is never the only place a reader
-can resolve it. Don't default this on elsewhere — Figures 2–3 have the
-room for full names and use them.
+Criterion names can get long ("Structure and Placement Rules").
+`shortenCriterion` (shared by `RateBarChart` and `KappaBarChart`)
+truncates the Y-axis label to the criterion's first word ("Structure",
+"Naming", "File", "Code"); the figure's own caption must then point to
+wherever the full names still appear (Table 2 for Figure 1, Table 3
+for Figure 3) so the abbreviation is never the only place a reader can
+resolve it. It's on by default in the `RateBarChart` panels inside
+Figure 1's grid (cramped 2×2 layout) and in Figure 3's `KappaBarChart`
+(long criterion names were crowding the Y axis and forcing an
+oversized column). Figure 2's split histogram has no criterion axis,
+so this doesn't apply there.
+
+The Y-axis width on `RateBarChart`/`KappaBarChart` is never a fixed
+guess — `estimateYAxisWidth` in `chart-primitives.tsx` sizes it to the
+actual (post-wrap, post-shorten) label content for the rows being
+rendered. A fixed width leaves a block of dead space between a short
+label and the wall whenever nothing else in that chart is long enough
+to justify the reservation; recompute per chart instance instead of
+hardcoding a new guess. `SplitHistogramChart` follows the same
+principle for its numeric axes: an explicit `width`/`height` sized to
+the digit count and label length, rather than Recharts' fixed
+60px/30px axis-reservation fallback, which visibly overshoots short
+numeric labels — most noticeably at mobile widths, where that
+fixed overshoot is a bigger share of the panel.
 
 In `rate-bar-chart.tsx`, the CI whisker (`stroke="#18181b"`, near-black)
 renders on top of the bar (Recharts paints `<ErrorBar>` after the bar
