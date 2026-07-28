@@ -177,12 +177,15 @@ site — it's what makes `ChartPanel` and the footer read as one
 deliberate tone rather than unrelated grays; don't introduce a second
 "grayish box" color, reuse this one. `--color-table-header` (`#f4f4f5`,
 Tailwind zinc-100) is separate and cooler, reserved for `<thead>`
-backgrounds. Chart bars themselves stay grayscale
-(`fill="#d4d4d8"`) — color-coding a bar by its value would mean
-inventing a threshold ("good"/"bad") that isn't in the export; see the
-not-measurable handling below for why that's off the table. Any new
-color use should be this deliberate and this narrow, not a general
-license to add hue.
+backgrounds. `--color-accent` (`#a7cdf2`, a pastel blue) is the one
+color every bar shares, in `RateBarChart`, `KappaBarChart`, and
+`SplitHistogramChart` alike — one flat hue everywhere a bar is drawn,
+not a palette. It's still *not* value-based color-coding: every bar
+gets the same accent regardless of what it measures — color-coding a
+bar's hue BY its value would mean inventing a threshold ("good"/"bad")
+that isn't in the export; see the not-measurable handling below for
+why that's off the table. Any new color use should be this deliberate
+and this narrow, not a general license to add hue.
 
 **Chart panels** (`ChartPanel` in `components/figure.tsx`) — every
 chart on the site sits in one: an outer `bg-panel` box with large
@@ -232,11 +235,15 @@ room for full names and use them.
 In `rate-bar-chart.tsx`, the CI whisker (`stroke="#18181b"`, near-black)
 renders on top of the bar (Recharts paints `<ErrorBar>` after the bar
 rectangles), but the whisker's near-side segment sits *inside* the
-bar's horizontal extent. If the bar fill is the same near-black as the
-whisker, that segment reads as invisible — same color painted over
-itself. The bar must stay a visibly lighter gray (`fill="#d4d4d8"`)
-so the whisker is legible on both sides of the point estimate, not
-just where it extends past the bar into open space.
+bar's horizontal extent. If the bar fill were as dark as the whisker,
+that segment would read as invisible — same color painted over itself.
+The bar (`fill="var(--color-accent)"`, set once in
+`components/chart-primitives.tsx`'s `BarOrGapShape`, shared by every
+bar chart) must stay visibly lighter than near-black so the whisker is
+legible on both sides of the point estimate, not just where it extends
+past the bar into open space — keep this in mind if `--accent` is ever
+retuned, a fully saturated blue would fail this the same way a dark
+gray would have.
 
 **magent-lab vs. magent-lab-ui** — the footer (`components/site-footer.tsx`)
 is the one place that explains the split: studies run in

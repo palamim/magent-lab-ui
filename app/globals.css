@@ -3,7 +3,9 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
-  --accent: #0f6e5c;
+  /* Chart bars — one pastel blue, everywhere a bar is drawn, replacing
+     what used to be flat gray (#d4d4d8). */
+  --accent: #a7cdf2;
   --status-good: #15803d;
   /* The one secondary surface color on the site: chart panel backgrounds
      and the footer both use it, so it reads as one deliberate tone rather

@@ -33,7 +33,7 @@ export function SplitHistogramChart({ rows }: { rows: SplitHistogramRow[] }) {
           />
           <Bar
             dataKey="count"
-            fill="#d4d4d8"
+            fill="var(--color-accent)"
             radius={[4, 4, 0, 0]}
             barSize={24}
             isAnimationActive={false}

@@ -71,6 +71,13 @@ export function BarOrGapShape(
     );
   }
   return (
-    <rect x={x} y={y} width={width} height={height} rx={2} fill="#d4d4d8" />
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      rx={2}
+      fill="var(--color-accent)"
+    />
   );
 }
