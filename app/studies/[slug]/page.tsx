@@ -16,6 +16,8 @@ import { MeasurableRateCell, ClusterBootstrapCell } from "@/components/stat-cell
 import { RateBarChart } from "@/components/rate-bar-chart";
 import { SplitHistogramChart } from "@/components/split-histogram-chart";
 import { KappaBarChart } from "@/components/kappa-bar-chart";
+import { DivergentCellsExplorer } from "@/components/divergent-cells";
+import { groupDivergentCells } from "@/lib/divergent-cells";
 import { Figure, TableCaption } from "@/components/figure";
 
 export function generateStaticParams() {
@@ -38,6 +40,7 @@ const CONTENTS = [
   { id: "dataset", label: "Dataset" },
   { id: "results", label: "Per-criterion results" },
   { id: "consistency", label: "Consistency" },
+  { id: "divergent-cells", label: "Divergent cells" },
   { id: "conclusions", label: "Conclusions" },
   { id: "limitations", label: "Limitations" },
 ];
@@ -335,11 +338,46 @@ export default async function StudyPage({
             }
           />
         </div>
+
+        <p className="mt-6 text-sm leading-6 text-zinc-800">
+          See{" "}
+          <a href="#divergent-cells" className="underline underline-offset-2">
+            § 6 Divergent cells
+          </a>{" "}
+          for the individual replicate reasoning behind these splits.
+        </p>
+      </section>
+
+      <section id="divergent-cells" className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
+          6. Divergent cells
+        </h2>
+        <p className="mt-3 text-sm leading-6 text-zinc-800">
+          Every (diff, criterion) cell whose 5 replicates were{" "}
+          <em>not</em> unanimous — unanimous (&quot;5-0&quot;) cells are
+          excluded, so this is exactly the set of cells behind Figure 5&apos;s
+          non-&quot;5-0&quot; bars. Grouped by criterion, in the same order as
+          the figures above. Replicates are numbered [1]–[5] in the order
+          stored, which is inferred from creation time, not an explicit
+          index — see{" "}
+          <a href="#limitations" className="underline underline-offset-2">
+            Limitations
+          </a>
+          ; only that numbering, not any reported statistic, depends on it.
+          A replicate whose answer diverges from the cell&apos;s expected
+          (ground-truth) label is marked.
+        </p>
+        <DivergentCellsExplorer
+          groups={groupDivergentCells(
+            study.divergentCells,
+            study.validity.perCriterion.map((row) => row.criterion),
+          )}
+        />
       </section>
 
       <section id="conclusions" className="mt-10">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          6. Conclusions
+          7. Conclusions
         </h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-zinc-800">
           {study.conclusions.map((conclusion, i) => (
@@ -350,7 +388,7 @@ export default async function StudyPage({
 
       <section id="limitations" className="mt-10 mb-16">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
-          7. Limitations
+          8. Limitations
         </h2>
         <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-6 text-zinc-800">
           {study.limitations.map((limitation, i) => (

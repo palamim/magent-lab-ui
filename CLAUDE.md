@@ -171,23 +171,30 @@ The index page is an entry point, not the destination — enough per
 study (title, date, subject, n, status) to pick one, nothing more.
 Depth belongs on the study page: hypothesis, method, dataset (Table 1),
 per-criterion results (Figures 1–4 plus Table 2), consistency
-(Figures 5–6 plus Table 3), conclusions, and limitations are built,
-numbered, and cross-linked via the Contents nav. Figures 1–4 cover all
-four validity metrics — majority-vote accuracy, sensitivity,
-specificity, cluster-bootstrap agreement — each a horizontal bar with
-CI whiskers built on the shared `components/rate-bar-chart.tsx` +
-`lib/chart-data.ts`. Figures 5–6 cover consistency: a split-histogram
-column chart (`components/split-histogram-chart.tsx`) and a
-zero-baseline kappa bar chart (`components/kappa-bar-chart.tsx`, no
-whiskers — kappa has no CI in the schema). Both rate and kappa bars
-share label-wrapping, the not-measurable/degenerate gap treatment, and
-the bar shape via `components/chart-primitives.tsx` — extend that file
-rather than re-forking the logic into a third chart. Don't add more
-charts speculatively — each one is a real design decision (see the
+(Figures 5–6 plus Table 3), a divergent-cell explorer, conclusions, and
+limitations are built, numbered, and cross-linked via the Contents nav.
+Figures 1–4 cover all four validity metrics — majority-vote accuracy,
+sensitivity, specificity, cluster-bootstrap agreement — each a
+horizontal bar with CI whiskers built on the shared
+`components/rate-bar-chart.tsx` + `lib/chart-data.ts`. Figures 5–6
+cover consistency: a split-histogram column chart
+(`components/split-histogram-chart.tsx`) and a zero-baseline kappa bar
+chart (`components/kappa-bar-chart.tsx`, no whiskers — kappa has no CI
+in the schema). Both rate and kappa bars share label-wrapping, the
+not-measurable/degenerate gap treatment, and the bar shape via
+`components/chart-primitives.tsx` — extend that file rather than
+re-forking the logic into a third chart. Don't add more charts
+speculatively — each one is a real design decision (see the
 not-measurable handling above) and should be a deliberate ask, not a
-drive-by addition. Still missing: a divergent-cell explorer for where
-the judge disagreed with itself or with ground truth — `divergentCells`
-is in the schema and exported, but nothing on the page renders it yet.
+drive-by addition. `components/divergent-cells.tsx` renders every
+non-unanimous (diff, criterion) cell — grouped by criterion (order from
+`lib/divergent-cells.ts`'s `groupDivergentCells`), one collapsed native
+`<details>` per cell, replicates numbered [1]–[5] inside. Collapsed by
+default is deliberate — unlike `limitations`, nothing pins this section
+open; the whole point is browse-then-drill-in, not a wall of reasoning
+text. A replicate whose `actual` differs from the cell's `groundTruth`
+is marked in plain type weight, not color — this site has no hue
+outside zinc grayscale and that's not the place to introduce one.
 Prefer adding real depth to a study page over adding another summary
 column to the index.
 
