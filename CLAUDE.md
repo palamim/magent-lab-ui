@@ -148,13 +148,42 @@ oversight.
 
 Typographic and minimal: no cards, no shadows, hairline borders only.
 
+**Fonts** — a fixed three-family system, all loaded via `next/font/google`
+in `app/layout.tsx` and wired to Tailwind's theme tokens in
+`app/globals.css`: `--font-serif` (Source Serif 4) for body/long-form
+copy — hypothesis, methodology, conclusions, limitations, replicate
+reasoning — is the `<body>` default, no class needed. `--font-sans`
+(Space Grotesk) is for headings and UI chrome — applied globally to
+`h1`–`h6` via `@layer base`, and explicitly via `font-sans` on
+non-heading chrome (nav, table `<thead>`, figure/table captions,
+header, footer, byline). `--font-mono` (JetBrains Mono) is for
+anything code-shaped — every numeral (`components/num.tsx`), diff
+keys, chart axis ticks. When adding a new UI element, decide which of
+the three it is before picking a class; don't leave it on the inherited
+default without checking that's actually what it should be.
+
+**Color** — still overwhelmingly zinc grayscale, but no longer
+color-free: `--color-accent` and `--color-status-good` are defined in
+`app/globals.css`'s `@theme inline` block. `--color-status-good` is
+reserved for the index page's "completed" status dot
+(`app/page.tsx`) — a status color, not a decoration; don't reuse it
+for anything that isn't a state. Chart bars stay grayscale
+(`fill="#d4d4d8"`) — color-coding a bar by its value would mean
+inventing a threshold ("good"/"bad") that isn't in the export; see the
+not-measurable handling below for why that's off the table. Any new
+color use should be this deliberate and this narrow, not a general
+license to add hue.
+
 The study page reads as a research document, not a dashboard: a
 numbered Contents nav up top linking to every numbered section, each
 `<h2>` prefixed with its section number, and every table/figure named,
 numbered, and captioned (see the correctness rules above). Figures
 are centered in a narrower column than the full-width tables and
 body text — that contrast is deliberate, it's what visually marks
-something as a figure.
+something as a figure. The one exception is a `wide` figure (see
+Figure 1 below) — pass `wide` to `<Figure>` when its content is itself
+a multi-column grid that needs the full content width, not the
+narrower centered column.
 
 In `rate-bar-chart.tsx`, the CI whisker (`stroke="#18181b"`, near-black)
 renders on top of the bar (Recharts paints `<ErrorBar>` after the bar
@@ -165,19 +194,30 @@ itself. The bar must stay a visibly lighter gray (`fill="#d4d4d8"`)
 so the whisker is legible on both sides of the point estimate, not
 just where it extends past the bar into open space.
 
+**magent-lab vs. magent-lab-ui** — the footer (`components/site-footer.tsx`)
+is the one place that explains the split: studies run in
+[magent-lab](https://github.com/palamim/magent-lab) (the evaluation
+harness), this repo only holds the committed export, the schema, and
+the UI. Don't blur that distinction elsewhere. The study page itself
+additionally links to magent-lab directly (under the byline, "Run in
+magent-lab") so a reader doesn't have to reach the footer to find
+where an experiment actually ran.
+
 ## Where this is headed
 
 The index page is an entry point, not the destination — enough per
 study (title, date, subject, n, status) to pick one, nothing more.
 Depth belongs on the study page: hypothesis, method, dataset (Table 1),
-per-criterion results (Figures 1–4 plus Table 2), consistency
-(Figures 5–6 plus Table 3), a divergent-cell explorer, conclusions, and
+per-criterion results (Figure 1 plus Table 2), consistency (Figures
+2–3 plus Table 3), a divergent-cell explorer, conclusions, and
 limitations are built, numbered, and cross-linked via the Contents nav.
-Figures 1–4 cover all four validity metrics — majority-vote accuracy,
-sensitivity, specificity, cluster-bootstrap agreement — each a
-horizontal bar with CI whiskers built on the shared
-`components/rate-bar-chart.tsx` + `lib/chart-data.ts`. Figures 5–6
-cover consistency: a split-histogram column chart
+Figure 1 is a `wide` figure: a 2×2 grid (`ChartPanel` from
+`components/figure.tsx`) of all four validity metrics — majority-vote
+accuracy, sensitivity, specificity, cluster-bootstrap agreement — each
+panel its own titled horizontal bar with CI whiskers, built on the
+shared `components/rate-bar-chart.tsx` + `lib/chart-data.ts`, one
+shared figure caption underneath instead of four separate ones. Figures
+2–3 cover consistency: a split-histogram column chart
 (`components/split-histogram-chart.tsx`) and a zero-baseline kappa bar
 chart (`components/kappa-bar-chart.tsx`, no whiskers — kappa has no CI
 in the schema). Both rate and kappa bars share label-wrapping, the
@@ -193,10 +233,12 @@ non-unanimous (diff, criterion) cell — grouped by criterion (order from
 default is deliberate — unlike `limitations`, nothing pins this section
 open; the whole point is browse-then-drill-in, not a wall of reasoning
 text. A replicate whose `actual` differs from the cell's `groundTruth`
-is marked in plain type weight, not color — this site has no hue
-outside zinc grayscale and that's not the place to introduce one.
-Prefer adding real depth to a study page over adding another summary
-column to the index.
+is marked in bold type weight, not color — see Color above on why bar
+color-coding is off the table; a per-replicate flag reads differently
+(it's a direct field comparison, not an invented threshold) but still
+defaults to weight over hue here for consistency with the rest of the
+page. Prefer adding real depth to a study page over adding another
+summary column to the index.
 
 ## Repo boundary
 

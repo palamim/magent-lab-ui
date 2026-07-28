@@ -12,7 +12,7 @@ export default function Home() {
 
       <table className="mt-10 w-full border-collapse text-sm">
         <thead>
-          <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
+          <tr className="border-b border-black/20 text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
             <th className="py-2 pr-4 font-medium">Study</th>
             <th className="py-2 pr-4 font-medium">Date</th>
             <th className="py-2 pr-4 font-medium">Subject</th>
@@ -41,7 +41,15 @@ export default function Home() {
               <td className="py-3 pr-4 text-zinc-700">
                 {study.dataset.nDiffs}
               </td>
-              <td className="py-3 text-zinc-700">completed</td>
+              <td className="py-3 font-sans text-zinc-700">
+                <span className="inline-flex items-center gap-1.5">
+                  <span
+                    aria-hidden
+                    className="inline-block size-1.5 rounded-full bg-status-good"
+                  />
+                  completed
+                </span>
+              </td>
             </tr>
           ))}
         </tbody>

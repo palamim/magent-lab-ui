@@ -52,7 +52,7 @@ export function KappaBarChart({ rows }: { rows: KappaChartRow[] }) {
             ticks={AXIS_TICKS}
             tickFormatter={(v: number) => v.toFixed(2)}
             stroke="#71717a"
-            tick={{ fontSize: 11, fontFamily: "var(--font-geist-mono)" }}
+            tick={{ fontSize: 11, fontFamily: "var(--font-mono)" }}
           />
           <YAxis
             type="category"

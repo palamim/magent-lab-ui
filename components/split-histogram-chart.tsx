@@ -23,13 +23,13 @@ export function SplitHistogramChart({ rows }: { rows: SplitHistogramRow[] }) {
             dataKey="split"
             type="category"
             stroke="#71717a"
-            tick={{ fontSize: 11, fontFamily: "var(--font-geist-mono)" }}
+            tick={{ fontSize: 11, fontFamily: "var(--font-mono)" }}
           />
           <YAxis
             type="number"
             allowDecimals={false}
             stroke="#71717a"
-            tick={{ fontSize: 11, fontFamily: "var(--font-geist-mono)" }}
+            tick={{ fontSize: 11, fontFamily: "var(--font-mono)" }}
           />
           <Bar
             dataKey="count"
@@ -43,7 +43,7 @@ export function SplitHistogramChart({ rows }: { rows: SplitHistogramRow[] }) {
               position="top"
               fontSize={11}
               fill="#3f3f46"
-              fontFamily="var(--font-geist-mono)"
+              fontFamily="var(--font-mono)"
             />
           </Bar>
         </BarChart>

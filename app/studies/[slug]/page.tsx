@@ -18,7 +18,8 @@ import { SplitHistogramChart } from "@/components/split-histogram-chart";
 import { KappaBarChart } from "@/components/kappa-bar-chart";
 import { DivergentCellsExplorer } from "@/components/divergent-cells";
 import { groupDivergentCells } from "@/lib/divergent-cells";
-import { Figure, TableCaption } from "@/components/figure";
+import { Figure, ChartPanel, TableCaption } from "@/components/figure";
+import { ExternalLink } from "@/components/external-link";
 
 export function generateStaticParams() {
   return loadStudies().map((study) => ({ slug: studySlug(study) }));
@@ -59,18 +60,30 @@ export default async function StudyPage({
 
   return (
     <>
-      <Link href="/" className="text-xs text-zinc-500 hover:text-black">
+      <Link
+        href="/"
+        className="font-sans text-xs text-zinc-500 hover:text-black"
+      >
         ← Studies
       </Link>
 
       <h1 className="mt-4 font-mono text-xl font-semibold tracking-tight text-black">
         {study.studyId}
       </h1>
-      <p className="mt-1 text-xs text-zinc-500">
+      <p className="mt-1 font-sans text-xs text-zinc-500">
         {study.generatedAt} · {study.subject.subjectKey} ({study.subject.model})
       </p>
+      <p className="mt-1 font-sans text-xs text-zinc-500">
+        Run in{" "}
+        <ExternalLink
+          href="https://github.com/palamim/magent-lab"
+          className="underline underline-offset-2 hover:text-black"
+        >
+          magent-lab
+        </ExternalLink>
+      </p>
 
-      <nav aria-label="Contents" className="mt-8 border-y border-black/10 py-4">
+      <nav aria-label="Contents" className="mt-8 border-y border-black/10 py-4 font-sans">
         <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
           Contents
         </p>
@@ -111,13 +124,15 @@ export default async function StudyPage({
         </h2>
         <dl className="mt-3 flex gap-8 text-sm">
           <div>
-            <dt className="text-xs text-zinc-500">Diffs</dt>
+            <dt className="font-sans text-xs text-zinc-500">Diffs</dt>
             <dd className="font-mono">
               <Num value={study.dataset.nDiffs} />
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-zinc-500">Replicates per diff</dt>
+            <dt className="font-sans text-xs text-zinc-500">
+              Replicates per diff
+            </dt>
             <dd className="font-mono">
               <Num value={study.dataset.replicatesPerDiff} />
             </dd>
@@ -126,7 +141,7 @@ export default async function StudyPage({
 
         <table className="mt-6 w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
+            <tr className="border-b border-black/20 text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
               <th className="py-2 pr-4 font-medium">Criterion</th>
               <th className="py-2 pr-4 font-medium">No</th>
               <th className="py-2 font-medium">Yes</th>
@@ -176,38 +191,41 @@ export default async function StudyPage({
           full precision.
         </p>
 
-        <Figure number={1} title="Majority-vote accuracy, by criterion">
-          <RateBarChart rows={majorityVoteAccuracyRows(study.validity.perCriterion)} />
-        </Figure>
-
         <Figure
-          number={2}
-          title="Sensitivity, by criterion"
-          note={<>recall on expected-&quot;no&quot; (violation) diffs</>}
+          number={1}
+          title="Per-criterion validity, by metric"
+          note={<>all four share the same 0–1 scale and criterion order</>}
+          wide
         >
-          <RateBarChart rows={sensitivityRows(study.validity.perCriterion)} />
-        </Figure>
-
-        <Figure
-          number={3}
-          title="Specificity, by criterion"
-          note={<>recall on expected-&quot;yes&quot; (compliant) diffs</>}
-        >
-          <RateBarChart rows={specificityRows(study.validity.perCriterion)} />
-        </Figure>
-
-        <Figure
-          number={4}
-          title="Cluster-bootstrap agreement, by criterion"
-          note={<>treats replicates within a diff as clustered</>}
-        >
-          <RateBarChart rows={clusterBootstrapRows(study.validity.perCriterion)} />
+          <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
+            <ChartPanel title="Majority-vote accuracy">
+              <RateBarChart rows={majorityVoteAccuracyRows(study.validity.perCriterion)} />
+            </ChartPanel>
+            <ChartPanel
+              title="Sensitivity"
+              note={<>recall on expected-&quot;no&quot; (violation) diffs</>}
+            >
+              <RateBarChart rows={sensitivityRows(study.validity.perCriterion)} />
+            </ChartPanel>
+            <ChartPanel
+              title="Specificity"
+              note={<>recall on expected-&quot;yes&quot; (compliant) diffs</>}
+            >
+              <RateBarChart rows={specificityRows(study.validity.perCriterion)} />
+            </ChartPanel>
+            <ChartPanel
+              title="Cluster-bootstrap agreement"
+              note={<>treats replicates within a diff as clustered</>}
+            >
+              <RateBarChart rows={clusterBootstrapRows(study.validity.perCriterion)} />
+            </ChartPanel>
+          </div>
         </Figure>
 
         <div id="table-2" className="mt-10 overflow-x-auto">
           <table className="w-full min-w-[640px] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
+              <tr className="border-b border-black/20 text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
                 <th className="py-2 pr-4 font-medium">Criterion</th>
                 <th className="py-2 pr-4 font-medium">
                   Majority-vote accuracy
@@ -249,11 +267,12 @@ export default async function StudyPage({
             title="Per-criterion results"
             note={
               <>
-                Underlies Figures 1–4. Each cell: point estimate, confidence
-                interval in brackets, and n — the diffs it&apos;s computed
-                over (nClusters for cluster-bootstrap agreement). Both this
-                table and Figures 1–4 round to {DISPLAY_DECIMALS} decimal
-                places for display; see the study export for full precision
+                Underlies all four panels of Figure 1. Each cell: point
+                estimate, confidence interval in brackets, and n — the diffs
+                it&apos;s computed over (nClusters for cluster-bootstrap
+                agreement). Both this table and Figure 1 round to{" "}
+                {DISPLAY_DECIMALS} decimal places for display; see the study
+                export for full precision
               </>
             }
           />
@@ -272,7 +291,7 @@ export default async function StudyPage({
         </p>
 
         <Figure
-          number={5}
+          number={2}
           title="Split histogram, across all (diff, criterion) cells"
           note={<>a &quot;5-0&quot; cell was unanimous; anything else split</>}
         >
@@ -280,13 +299,13 @@ export default async function StudyPage({
         </Figure>
 
         <Figure
-          number={6}
+          number={3}
           title="Self-agreement (kappa), by criterion"
           note={
             <>
-              0 marks chance-level agreement, 1 perfect agreement; a criterion
-              with no bar has a degenerate marginal — the reason is labelled
-              in its place
+              -1 marks perfect disagreement, 0 chance-level agreement, 1
+              perfect agreement; a criterion with no bar has a degenerate
+              marginal — the reason is labelled in its place
             </>
           }
         >
@@ -295,7 +314,7 @@ export default async function StudyPage({
 
         <table className="mt-10 w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
+            <tr className="border-b border-black/20 text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
               <th className="py-2 pr-4 font-medium">Criterion</th>
               <th className="py-2 font-medium">Self-agreement (kappa)</th>
             </tr>
@@ -326,7 +345,7 @@ export default async function StudyPage({
             title="Self-agreement (kappa), by criterion"
             note={
               <>
-                Underlies Figure 6. Chance-corrects the judge&apos;s
+                Underlies Figure 3. Chance-corrects the judge&apos;s
                 replicate calls against its own marginal distribution for
                 that criterion — a relative signal across criteria, not an
                 absolute one; see{" "}
@@ -355,7 +374,7 @@ export default async function StudyPage({
         <p className="mt-3 text-sm leading-6 text-zinc-800">
           Every (diff, criterion) cell whose 5 replicates were{" "}
           <em>not</em> unanimous — unanimous (&quot;5-0&quot;) cells are
-          excluded, so this is exactly the set of cells behind Figure 5&apos;s
+          excluded, so this is exactly the set of cells behind Figure 2&apos;s
           non-&quot;5-0&quot; bars. Grouped by criterion, in the same order as
           the figures above. Replicates are numbered [1]–[5] in the order
           stored, which is inferred from creation time, not an explicit
