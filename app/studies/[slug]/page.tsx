@@ -5,13 +5,17 @@ import { getStudy, loadStudies, studySlug } from "@/lib/studies";
 import { DISPLAY_DECIMALS } from "@/lib/display";
 import {
   clusterBootstrapRows,
+  kappaRows,
   majorityVoteAccuracyRows,
   sensitivityRows,
   specificityRows,
+  splitHistogramRows,
 } from "@/lib/chart-data";
 import { Num } from "@/components/num";
 import { MeasurableRateCell, ClusterBootstrapCell } from "@/components/stat-cell";
 import { RateBarChart } from "@/components/rate-bar-chart";
+import { SplitHistogramChart } from "@/components/split-histogram-chart";
+import { KappaBarChart } from "@/components/kappa-bar-chart";
 import { Figure, TableCaption } from "@/components/figure";
 
 export function generateStaticParams() {
@@ -257,30 +261,42 @@ export default async function StudyPage({
         <h2 className="text-sm font-semibold uppercase tracking-wide text-zinc-500">
           5. Consistency
         </h2>
-
-        <h3 className="mt-4 text-xs font-semibold text-zinc-500">
-          Split histogram
-        </h3>
-        <p className="mt-1 text-xs leading-5 text-zinc-500">
+        <p className="mt-3 text-sm leading-6 text-zinc-800">
           Each labeled diff was judged {study.dataset.replicatesPerDiff}{" "}
           times; a split label is the majority-minority breakdown of those
           replicate calls for a (diff, criterion) cell — e.g. &quot;4-1&quot;
           means 4 replicates agreed and 1 diverged.
         </p>
-        <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm">
-          {Object.entries(study.consistency.splitHistogram).map(
-            ([split, count]) => (
-              <li key={split} className="font-mono">
-                {split}: <Num value={count as number} />
-              </li>
-            ),
-          )}
-        </ul>
 
-        <h3 className="mt-6 text-xs font-semibold text-zinc-500">
-          Self-agreement (kappa) by criterion
-        </h3>
-        <table className="mt-2 w-full border-collapse text-sm">
+        <Figure
+          number={5}
+          title="Split histogram, across all (diff, criterion) cells"
+          note={<>a &quot;5-0&quot; cell was unanimous; anything else split</>}
+        >
+          <SplitHistogramChart rows={splitHistogramRows(study.consistency.splitHistogram)} />
+        </Figure>
+
+        <Figure
+          number={6}
+          title="Self-agreement (kappa), by criterion"
+          note={
+            <>
+              0 marks chance-level agreement, 1 perfect agreement; a criterion
+              with no bar has a degenerate marginal — the reason is labelled
+              in its place
+            </>
+          }
+        >
+          <KappaBarChart rows={kappaRows(study.consistency.perCriterion)} />
+        </Figure>
+
+        <table className="mt-10 w-full border-collapse text-sm">
+          <thead>
+            <tr className="border-b border-black/20 text-left text-xs uppercase tracking-wide text-zinc-500">
+              <th className="py-2 pr-4 font-medium">Criterion</th>
+              <th className="py-2 font-medium">Self-agreement (kappa)</th>
+            </tr>
+          </thead>
           <tbody>
             {study.consistency.perCriterion.map((row) => (
               <tr key={row.criterion} className="border-b border-black/10">
@@ -307,9 +323,10 @@ export default async function StudyPage({
             title="Self-agreement (kappa), by criterion"
             note={
               <>
-                Chance-corrects the judge&apos;s replicate calls against its
-                own marginal distribution for that criterion — a relative
-                signal across criteria, not an absolute one; see{" "}
+                Underlies Figure 6. Chance-corrects the judge&apos;s
+                replicate calls against its own marginal distribution for
+                that criterion — a relative signal across criteria, not an
+                absolute one; see{" "}
                 <a href="#limitations" className="underline underline-offset-2">
                   Limitations
                 </a>

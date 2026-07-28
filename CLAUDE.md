@@ -170,18 +170,26 @@ just where it extends past the bar into open space.
 The index page is an entry point, not the destination — enough per
 study (title, date, subject, n, status) to pick one, nothing more.
 Depth belongs on the study page: hypothesis, method, dataset (Table 1),
-per-criterion results (Figures 1–4 plus Table 2), consistency (Table 3),
-conclusions, and limitations are built, numbered, and cross-linked via
-the Contents nav. Figures 1–4 cover all four validity metrics — majority-vote
-accuracy, sensitivity, specificity, cluster-bootstrap agreement — each
-a horizontal bar with CI whiskers built on the shared
-`components/rate-bar-chart.tsx` + `lib/chart-data.ts`. Don't add more
+per-criterion results (Figures 1–4 plus Table 2), consistency
+(Figures 5–6 plus Table 3), conclusions, and limitations are built,
+numbered, and cross-linked via the Contents nav. Figures 1–4 cover all
+four validity metrics — majority-vote accuracy, sensitivity,
+specificity, cluster-bootstrap agreement — each a horizontal bar with
+CI whiskers built on the shared `components/rate-bar-chart.tsx` +
+`lib/chart-data.ts`. Figures 5–6 cover consistency: a split-histogram
+column chart (`components/split-histogram-chart.tsx`) and a
+zero-baseline kappa bar chart (`components/kappa-bar-chart.tsx`, no
+whiskers — kappa has no CI in the schema). Both rate and kappa bars
+share label-wrapping, the not-measurable/degenerate gap treatment, and
+the bar shape via `components/chart-primitives.tsx` — extend that file
+rather than re-forking the logic into a third chart. Don't add more
 charts speculatively — each one is a real design decision (see the
 not-measurable handling above) and should be a deliberate ask, not a
 drive-by addition. Still missing: a divergent-cell explorer for where
-the judge disagreed with itself or with ground truth. Prefer adding
-real depth to a study page over adding another summary column to the
-index.
+the judge disagreed with itself or with ground truth — `divergentCells`
+is in the schema and exported, but nothing on the page renders it yet.
+Prefer adding real depth to a study page over adding another summary
+column to the index.
 
 ## Repo boundary
 
