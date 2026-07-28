@@ -12,7 +12,10 @@ import {
   splitHistogramRows,
 } from "@/lib/chart-data";
 import { Num } from "@/components/num";
-import { MeasurableRateCell, ClusterBootstrapCell } from "@/components/stat-cell";
+import {
+  MeasurableRateCell,
+  ClusterBootstrapCell,
+} from "@/components/stat-cell";
 import { RateBarChart } from "@/components/rate-bar-chart";
 import { SplitHistogramChart } from "@/components/split-histogram-chart";
 import { KappaBarChart } from "@/components/kappa-bar-chart";
@@ -83,7 +86,10 @@ export default async function StudyPage({
         </ExternalLink>
       </p>
 
-      <nav aria-label="Contents" className="mt-8 border-y border-black/10 py-4 font-sans">
+      <nav
+        aria-label="Contents"
+        className="mt-8 border-y border-black/10 py-4 font-sans"
+      >
         <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
           Contents
         </p>
@@ -139,37 +145,39 @@ export default async function StudyPage({
           </div>
         </dl>
 
-        <table className="mt-6 w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-black/20 text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
-              <th className="py-2 pr-4 font-medium">Criterion</th>
-              <th className="py-2 pr-4 font-medium">No</th>
-              <th className="py-2 font-medium">Yes</th>
-            </tr>
-          </thead>
-          <tbody>
-            {study.dataset.classBalance.map((entry) => (
-              <tr key={entry.criterion} className="border-b border-black/10">
-                <td className="py-2 pr-4">{entry.criterion}</td>
-                <td className="py-2 pr-4">
-                  <Num value={entry.noCount} />
-                </td>
-                <td className="py-2">
-                  <Num value={entry.yesCount} />
-                </td>
+        <div className="mt-6 overflow-hidden rounded-xl border border-black/10">
+          <table className="text-sm">
+            <thead>
+              <tr className="text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
+                <th className="px-4 py-2 font-medium">Criterion</th>
+                <th className="px-4 py-2 font-medium">No</th>
+                <th className="px-4 py-2 font-medium">Yes</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {study.dataset.classBalance.map((entry) => (
+                <tr key={entry.criterion}>
+                  <td className="px-4 py-2">{entry.criterion}</td>
+                  <td className="px-4 py-2">
+                    <Num value={entry.noCount} />
+                  </td>
+                  <td className="px-4 py-2">
+                    <Num value={entry.yesCount} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <div className="mt-2">
           <TableCaption
             number={1}
             title="Class balance, by criterion"
             note={
               <>
-                No / Yes are the number of diffs whose expected
-                (ground-truth) label is &quot;no&quot; or &quot;yes&quot; for
-                that criterion — not the judge&apos;s output
+                No / Yes are the number of diffs whose expected (ground-truth)
+                label is &quot;no&quot; or &quot;yes&quot; for that criterion —
+                not the judge&apos;s output
               </>
             }
           />
@@ -181,80 +189,106 @@ export default async function StudyPage({
           4. Per-criterion results
         </h2>
         <p className="mt-3 text-sm leading-6 text-zinc-800">
-          Bars are the point estimate; whiskers are the confidence interval.
-          A criterion with no bar is not measurable — the reason is labelled
-          in its place, not shown as a zero-length bar. The table below (
+          Bars are the point estimate; whiskers are the confidence interval. A
+          criterion with no bar is not measurable — the reason is labelled in
+          its place, not shown as a zero-length bar. The table below (
           <a href="#table-2" className="underline underline-offset-2">
             Table 2
           </a>
-          ) gives the exact figures behind every bar — the study export has
-          full precision.
+          ) gives the exact figures behind every bar — the study export has full
+          precision.
         </p>
 
         <Figure
           number={1}
           title="Per-criterion validity, by metric"
-          note={<>all four share the same 0–1 scale and criterion order</>}
+          note={
+            <>
+              all four share the same 0–1 scale and criterion order;
+              criterion names are abbreviated to their first word — see{" "}
+              <a href="#table-2" className="underline underline-offset-2">
+                Table 2
+              </a>{" "}
+              for the full names
+            </>
+          }
           wide
         >
           <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">
-            <ChartPanel title="Majority-vote accuracy">
-              <RateBarChart rows={majorityVoteAccuracyRows(study.validity.perCriterion)} />
+            <ChartPanel
+              title="Majority-vote accuracy"
+              note={<>correct against the expected label, across all diffs</>}
+            >
+              <RateBarChart
+                rows={majorityVoteAccuracyRows(study.validity.perCriterion)}
+                shortenCriterion
+              />
             </ChartPanel>
             <ChartPanel
               title="Sensitivity"
               note={<>recall on expected-&quot;no&quot; (violation) diffs</>}
             >
-              <RateBarChart rows={sensitivityRows(study.validity.perCriterion)} />
+              <RateBarChart
+                rows={sensitivityRows(study.validity.perCriterion)}
+                shortenCriterion
+              />
             </ChartPanel>
             <ChartPanel
               title="Specificity"
               note={<>recall on expected-&quot;yes&quot; (compliant) diffs</>}
             >
-              <RateBarChart rows={specificityRows(study.validity.perCriterion)} />
+              <RateBarChart
+                rows={specificityRows(study.validity.perCriterion)}
+                shortenCriterion
+              />
             </ChartPanel>
             <ChartPanel
               title="Cluster-bootstrap agreement"
               note={<>treats replicates within a diff as clustered</>}
             >
-              <RateBarChart rows={clusterBootstrapRows(study.validity.perCriterion)} />
+              <RateBarChart
+                rows={clusterBootstrapRows(study.validity.perCriterion)}
+                shortenCriterion
+              />
             </ChartPanel>
           </div>
         </Figure>
 
-        <div id="table-2" className="mt-10 overflow-x-auto">
-          <table className="w-full min-w-[640px] border-collapse text-sm">
+        <div
+          id="table-2"
+          className="mt-10 overflow-x-auto rounded-xl border border-black/10"
+        >
+          <table className="min-w-[640px] text-sm">
             <thead>
-              <tr className="border-b border-black/20 text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
-                <th className="py-2 pr-4 font-medium">Criterion</th>
-                <th className="py-2 pr-4 font-medium">
+              <tr className="text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
+                <th className="px-4 py-2 font-medium">Criterion</th>
+                <th className="px-4 py-2 font-medium">
                   Majority-vote accuracy
                 </th>
-                <th className="py-2 pr-4 font-medium">Sensitivity</th>
-                <th className="py-2 pr-4 font-medium">Specificity</th>
-                <th className="py-2 font-medium">
+                <th className="px-4 py-2 font-medium">Sensitivity</th>
+                <th className="px-4 py-2 font-medium">Specificity</th>
+                <th className="px-4 py-2 font-medium">
                   Cluster-bootstrap agreement
                 </th>
               </tr>
             </thead>
             <tbody>
               {study.validity.perCriterion.map((row) => (
-                <tr
-                  key={row.criterion}
-                  className="border-b border-black/10 align-top"
-                >
-                  <td className="py-3 pr-4">{row.criterion}</td>
-                  <td className="py-3 pr-4">
+                <tr key={row.criterion} className="align-top">
+                  <td className="px-4 py-3">{row.criterion}</td>
+                  <td className="px-4 py-3">
                     <MeasurableRateCell rate={row.majorityVoteAccuracy} />
                   </td>
-                  <td className="py-3 pr-4">
+                  <td className="px-4 py-3">
                     <MeasurableRateCell rate={row.sensitivity} />
                   </td>
-                  <td className="py-3 pr-4">
+                  <td className="px-4 py-3">
                     <MeasurableRateCell rate={row.specificity} />
                   </td>
-                  <td className="py-3">
-                    <ClusterBootstrapCell agreement={row.clusterBootstrapAgreement} />
+                  <td className="px-4 py-3">
+                    <ClusterBootstrapCell
+                      agreement={row.clusterBootstrapAgreement}
+                    />
                   </td>
                 </tr>
               ))}
@@ -284,18 +318,23 @@ export default async function StudyPage({
           5. Consistency
         </h2>
         <p className="mt-3 text-sm leading-6 text-zinc-800">
-          Each labeled diff was judged {study.dataset.replicatesPerDiff}{" "}
-          times; a split label is the majority-minority breakdown of those
-          replicate calls for a (diff, criterion) cell — e.g. &quot;4-1&quot;
-          means 4 replicates agreed and 1 diverged.
+          Each labeled diff was judged {study.dataset.replicatesPerDiff} times;
+          a split label is the majority-minority breakdown of those replicate
+          calls for a (diff, criterion) cell — e.g. &quot;4-1&quot; means 4
+          replicates agreed and 1 diverged.
         </p>
 
         <Figure
           number={2}
           title="Split histogram, across all (diff, criterion) cells"
           note={<>a &quot;5-0&quot; cell was unanimous; anything else split</>}
+          wide
         >
-          <SplitHistogramChart rows={splitHistogramRows(study.consistency.splitHistogram)} />
+          <ChartPanel title="Split histogram">
+            <SplitHistogramChart
+              rows={splitHistogramRows(study.consistency.splitHistogram)}
+            />
+          </ChartPanel>
         </Figure>
 
         <Figure
@@ -303,52 +342,58 @@ export default async function StudyPage({
           title="Self-agreement (kappa), by criterion"
           note={
             <>
-              -1 marks perfect disagreement, 0 chance-level agreement, 1
-              perfect agreement; a criterion with no bar has a degenerate
-              marginal — the reason is labelled in its place
+              -1 marks perfect disagreement, 0 chance-level agreement, 1 perfect
+              agreement; a criterion with no bar has a degenerate marginal — the
+              reason is labelled in its place
             </>
           }
+          wide
         >
-          <KappaBarChart rows={kappaRows(study.consistency.perCriterion)} />
+          <ChartPanel title="Self-agreement (kappa)">
+            <KappaBarChart rows={kappaRows(study.consistency.perCriterion)} />
+          </ChartPanel>
         </Figure>
 
-        <table className="mt-10 w-full border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-black/20 text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
-              <th className="py-2 pr-4 font-medium">Criterion</th>
-              <th className="py-2 font-medium">Self-agreement (kappa)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {study.consistency.perCriterion.map((row) => (
-              <tr key={row.criterion} className="border-b border-black/10">
-                <td className="py-2 pr-4">{row.criterion}</td>
-                <td className="py-2">
-                  {row.selfAgreementKappa === null ? (
-                    <span className="text-xs text-zinc-600">
-                      {row.reason}
-                    </span>
-                  ) : (
-                    <Num
-                      value={row.selfAgreementKappa}
-                      decimals={DISPLAY_DECIMALS}
-                    />
-                  )}
-                </td>
+        <div className="mt-10 overflow-hidden rounded-xl border border-black/10">
+          <table className="text-sm">
+            <thead>
+              <tr className="text-left font-sans text-xs uppercase tracking-wide text-zinc-500">
+                <th className="px-4 py-2 font-medium">Criterion</th>
+                <th className="px-4 py-2 font-medium">
+                  Self-agreement (kappa)
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {study.consistency.perCriterion.map((row) => (
+                <tr key={row.criterion}>
+                  <td className="px-4 py-2">{row.criterion}</td>
+                  <td className="px-4 py-2">
+                    {row.selfAgreementKappa === null ? (
+                      <span className="text-xs text-zinc-600">
+                        {row.reason}
+                      </span>
+                    ) : (
+                      <Num
+                        value={row.selfAgreementKappa}
+                        decimals={DISPLAY_DECIMALS}
+                      />
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <div className="mt-2">
           <TableCaption
             number={3}
             title="Self-agreement (kappa), by criterion"
             note={
               <>
-                Underlies Figure 3. Chance-corrects the judge&apos;s
-                replicate calls against its own marginal distribution for
-                that criterion — a relative signal across criteria, not an
-                absolute one; see{" "}
+                Underlies Figure 3. Chance-corrects the judge&apos;s replicate
+                calls against its own marginal distribution for that criterion —
+                a relative signal across criteria, not an absolute one; see{" "}
                 <a href="#limitations" className="underline underline-offset-2">
                   Limitations
                 </a>
@@ -372,18 +417,17 @@ export default async function StudyPage({
           6. Divergent cells
         </h2>
         <p className="mt-3 text-sm leading-6 text-zinc-800">
-          Every (diff, criterion) cell whose 5 replicates were{" "}
-          <em>not</em> unanimous — unanimous (&quot;5-0&quot;) cells are
-          excluded, so this is exactly the set of cells behind Figure 2&apos;s
-          non-&quot;5-0&quot; bars. Grouped by criterion, in the same order as
-          the figures above. Replicates are numbered [1]–[5] in the order
-          stored, which is inferred from creation time, not an explicit
-          index — see{" "}
+          Every (diff, criterion) cell whose 5 replicates were <em>not</em>{" "}
+          unanimous — unanimous (&quot;5-0&quot;) cells are excluded, so this is
+          exactly the set of cells behind Figure 2&apos;s non-&quot;5-0&quot;
+          bars. Grouped by criterion, in the same order as the figures above.
+          Replicates are numbered [1]–[5] in the order stored, which is inferred
+          from creation time, not an explicit index — see{" "}
           <a href="#limitations" className="underline underline-offset-2">
             Limitations
           </a>
-          ; only that numbering, not any reported statistic, depends on it.
-          A replicate whose answer diverges from the cell&apos;s expected
+          ; only that numbering, not any reported statistic, depends on it. A
+          replicate whose answer diverges from the cell&apos;s expected
           (ground-truth) label is marked.
         </p>
         <DivergentCellsExplorer

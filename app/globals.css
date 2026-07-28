@@ -5,6 +5,11 @@
   --foreground: #171717;
   --accent: #0f6e5c;
   --status-good: #15803d;
+  /* The one secondary surface color on the site: chart panel backgrounds
+     and the footer both use it, so it reads as one deliberate tone rather
+     than several unrelated grays. */
+  --panel: #e7e7dc;
+  --table-header: #f4f4f5;
   color-scheme: light;
 }
 
@@ -13,6 +18,8 @@
   --color-foreground: var(--foreground);
   --color-accent: var(--accent);
   --color-status-good: var(--status-good);
+  --color-panel: var(--panel);
+  --color-table-header: var(--table-header);
   --font-sans: var(--font-space-grotesk);
   --font-serif: var(--font-source-serif);
   --font-mono: var(--font-jetbrains-mono);
@@ -32,5 +39,33 @@ body {
   h5,
   h6 {
     font-family: var(--font-sans);
+  }
+
+  /* Every table on the site: full grid lines, closed on all four sides via
+     the wrapper div's own border+radius+overflow-hidden (border-collapse
+     defeats border-radius on the table element itself), header tinted a
+     step darker than the page background. */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th,
+  td {
+    border-right: 1px solid rgb(0 0 0 / 0.1);
+    border-bottom: 1px solid rgb(0 0 0 / 0.1);
+  }
+
+  th:last-child,
+  td:last-child {
+    border-right: none;
+  }
+
+  tbody tr:last-child > td {
+    border-bottom: none;
+  }
+
+  thead {
+    background: var(--table-header);
   }
 }

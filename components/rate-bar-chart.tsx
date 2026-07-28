@@ -23,26 +23,38 @@ type BarDatum = {
 const ROW_HEIGHT = 56;
 const AXIS_TICKS = [0, 0.25, 0.5, 0.75, 1];
 
-function toBarDatum(row: ChartRow): BarDatum {
+function toBarDatum(row: ChartRow, shortenCriterion: boolean): BarDatum {
+  const criterion = shortenCriterion
+    ? row.criterion.split(" ")[0]
+    : row.criterion;
+
   if (row.value === null || !row.ci) {
     return {
-      criterion: row.criterion,
+      criterion,
       value: 0,
       notMeasurable: true,
       reason: row.reason,
     };
   }
   return {
-    criterion: row.criterion,
+    criterion,
     value: row.value,
     error: [row.value - row.ci.low, row.ci.high - row.value],
     notMeasurable: false,
   };
 }
 
-export function RateBarChart({ rows }: { rows: ChartRow[] }) {
-  const data = rows.map(toBarDatum);
+export function RateBarChart({
+  rows,
+  shortenCriterion,
+}: {
+  rows: ChartRow[];
+  /** Y-axis label is the criterion's first word only — for tight grid layouts. */
+  shortenCriterion?: boolean;
+}) {
+  const data = rows.map((row) => toBarDatum(row, Boolean(shortenCriterion)));
   const height = data.length * ROW_HEIGHT + 32;
+  const yAxisWidth = shortenCriterion ? 70 : 110;
 
   return (
     <div style={{ width: "100%", height }}>
@@ -64,7 +76,7 @@ export function RateBarChart({ rows }: { rows: ChartRow[] }) {
           <YAxis
             type="category"
             dataKey="criterion"
-            width={110}
+            width={yAxisWidth}
             stroke="#71717a"
             tick={<CriterionTick />}
           />

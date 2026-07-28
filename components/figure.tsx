@@ -13,19 +13,27 @@ export function Figure({
   wide?: boolean;
   children: ReactNode;
 }) {
+  const measure = wide ? "mx-auto" : "mx-auto max-w-xl";
+
   return (
     <figure className="mt-8">
-      <div className={wide ? "mx-auto" : "mx-auto max-w-xl"}>{children}</div>
-      <figcaption className="mx-auto mt-2 max-w-md text-center font-sans text-xs leading-5 text-zinc-500">
-        <span className="font-semibold text-zinc-700">Figure {number}.</span>{" "}
-        {title}
+      <div className={measure}>{children}</div>
+      <figcaption className={`mt-2 font-sans text-xs leading-5 text-zinc-500 ${measure}`}>
+        <span className="font-semibold italic text-zinc-700">
+          Figure {number}. {title}
+        </span>
         {note ? <>. {note}</> : null}
       </figcaption>
     </figure>
   );
 }
 
-/** One titled chart within a grid Figure — a per-panel label, not a numbered caption of its own. */
+/**
+ * One titled chart within a Figure — a per-panel label, not a numbered
+ * caption of its own. The panel background (bg-panel) frames the chart's
+ * own white surface, which keeps its rounded corners nested one step
+ * inside the panel's.
+ */
 export function ChartPanel({
   title,
   note,
@@ -36,16 +44,16 @@ export function ChartPanel({
   children: ReactNode;
 }) {
   return (
-    <div>
-      <h3 className="text-center text-xs font-semibold text-zinc-700">
+    <div className="rounded-3xl bg-panel p-6">
+      <h3 className="text-center text-base font-semibold text-zinc-600">
         {title}
       </h3>
       {note ? (
-        <p className="mt-0.5 text-center font-sans text-xs text-zinc-500">
+        <p className="mt-1 text-center font-sans text-xs text-zinc-500">
           {note}
         </p>
       ) : null}
-      <div className="mt-2">{children}</div>
+      <div className="mt-4 rounded-2xl bg-white p-4">{children}</div>
     </div>
   );
 }
@@ -60,9 +68,10 @@ export function TableCaption({
   note?: ReactNode;
 }) {
   return (
-    <p className="text-center font-sans text-xs leading-5 text-zinc-500">
-      <span className="font-semibold text-zinc-700">Table {number}.</span>{" "}
-      {title}
+    <p className="font-sans text-xs leading-5 text-zinc-500">
+      <span className="font-semibold italic text-zinc-700">
+        Table {number}. {title}
+      </span>
       {note ? <>. {note}</> : null}
     </p>
   );

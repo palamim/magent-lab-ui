@@ -21,7 +21,9 @@ designed to read as a portfolio piece.
 ## Tech stack
 
 - **Next.js 16** (App Router), **React 19**, **TypeScript**
-- **Tailwind CSS v4** for styling — typographic, minimal; no cards, no shadows
+- **Tailwind CSS v4** for styling — typographic, minimal, no shadows;
+  chart panels and tables are the one deliberate exception to "no
+  cards" (see Design below)
 - **Recharts** for charts — a chart is a Client Component (`"use client"`)
   that receives already-loaded study data as props from its server
   page; Client Components are prerendered to static HTML same as
@@ -48,7 +50,7 @@ magent-lab-ui/
 │   ├── num.tsx                   # monospace numeral, decimal-aligned, optional display rounding
 │   ├── stat-cell.tsx             # renders a MeasurableRate / ClusterBootstrapAgreement cell
 │   ├── rate-bar-chart.tsx         # "use client" — generic horizontal bar + CI whiskers, per criterion
-│   └── figure.tsx                 # <Figure>/<TableCaption> — numbered, centered captions
+│   └── figure.tsx                 # <Figure>/<ChartPanel>/<TableCaption> — numbered, left-aligned captions
 ├── data/
 │   └── studies/                  # one committed JSON export per completed study
 ├── schemas/
@@ -146,7 +148,9 @@ handling. `app/globals.css` sets `color-scheme: light` explicitly.
 This is a deliberate, revisit-before-changing decision, not an
 oversight.
 
-Typographic and minimal: no cards, no shadows, hairline borders only.
+Typographic and minimal: no shadows, ever. Chart panels and tables are
+boxed (see below) — that's the one place "no cards" no longer holds —
+but the boxing is always a flat fill + border-radius, never a shadow.
 
 **Fonts** — a fixed three-family system, all loaded via `next/font/google`
 in `app/layout.tsx` and wired to Tailwind's theme tokens in
@@ -163,27 +167,67 @@ the three it is before picking a class; don't leave it on the inherited
 default without checking that's actually what it should be.
 
 **Color** — still overwhelmingly zinc grayscale, but no longer
-color-free: `--color-accent` and `--color-status-good` are defined in
-`app/globals.css`'s `@theme inline` block. `--color-status-good` is
-reserved for the index page's "completed" status dot
-(`app/page.tsx`) — a status color, not a decoration; don't reuse it
-for anything that isn't a state. Chart bars stay grayscale
+color-free: `--color-accent`, `--color-status-good`, `--color-panel`,
+and `--color-table-header` are defined in `app/globals.css`'s
+`@theme inline` block. `--color-status-good` is reserved for the index
+page's "completed" status dot (`app/page.tsx`) — a status color, not a
+decoration; don't reuse it for anything that isn't a state.
+`--color-panel` (`#e7e7dc`) is the one secondary surface color on the
+site — it's what makes `ChartPanel` and the footer read as one
+deliberate tone rather than unrelated grays; don't introduce a second
+"grayish box" color, reuse this one. `--color-table-header` (`#f4f4f5`,
+Tailwind zinc-100) is separate and cooler, reserved for `<thead>`
+backgrounds. Chart bars themselves stay grayscale
 (`fill="#d4d4d8"`) — color-coding a bar by its value would mean
 inventing a threshold ("good"/"bad") that isn't in the export; see the
 not-measurable handling below for why that's off the table. Any new
 color use should be this deliberate and this narrow, not a general
 license to add hue.
 
+**Chart panels** (`ChartPanel` in `components/figure.tsx`) — every
+chart on the site sits in one: an outer `bg-panel` box with large
+rounded corners and padding, a big centered title naming the metric
+(this is separate from the figure's own numbered caption below it —
+the panel title is for scanning, the figure caption is the precise,
+citable one), and the chart itself nested in its own smaller-radius
+white box inside. A `Figure` with multiple charts (see the `wide`
+Figure 1 grid) is multiple `ChartPanel`s side by side with a gap
+between them, not one shared panel — each chart keeps its own box.
+
+**Tables** — full grid lines (not just horizontal rules), closed on
+all four sides, rounded corners, and a tinted `<thead>`. This is
+driven by global `@layer base` rules in `app/globals.css` (`table`,
+`th`, `td`, `thead` selectors), not per-table utility classes — a
+table's own JSX only needs a wrapping
+`overflow-hidden rounded-xl border border-black/10` div (or
+`overflow-x-auto` in place of `overflow-hidden` for a table wide
+enough to need horizontal scroll, e.g. Table 2) plus `px-4 py-2`-style
+cell padding; don't hand-roll per-row `border-b` classes again, the
+base rule already draws every cell edge. `border-collapse` on the
+`<table>` element defeats `border-radius` on that same element, which
+is why the rounding lives on the wrapper div instead.
+
 The study page reads as a research document, not a dashboard: a
 numbered Contents nav up top linking to every numbered section, each
 `<h2>` prefixed with its section number, and every table/figure named,
-numbered, and captioned (see the correctness rules above). Figures
-are centered in a narrower column than the full-width tables and
-body text — that contrast is deliberate, it's what visually marks
-something as a figure. The one exception is a `wide` figure (see
-Figure 1 below) — pass `wide` to `<Figure>` when its content is itself
-a multi-column grid that needs the full content width, not the
-narrower centered column.
+numbered, and captioned (see the correctness rules above). A `Figure`
+defaults to a column narrower than the full-width tables and body
+text — pass `wide` when its content needs the full content width (a
+multi-column grid, or a single chart that benefits from more
+horizontal room, e.g. the current study's Figures 1–3). Figure and
+Table captions are left-aligned, not centered; "Figure N. Title" /
+"Table N. Title" is bold+italic together, the trailing note stays
+regular weight — don't bold or italicize the note, only the
+number+title span.
+
+Criterion names can get long ("Structure and Placement Rules"). In a
+cramped layout — the `RateBarChart` panels inside Figure 1's grid —
+`shortenCriterion` truncates the Y-axis label to the criterion's first
+word ("Structure", "Naming", "File", "Code"); the figure's own caption
+must then point to wherever the full names still appear (Table 2, in
+Figure 1's case) so the abbreviation is never the only place a reader
+can resolve it. Don't default this on elsewhere — Figures 2–3 have the
+room for full names and use them.
 
 In `rate-bar-chart.tsx`, the CI whisker (`stroke="#18181b"`, near-black)
 renders on top of the bar (Recharts paints `<ErrorBar>` after the bar

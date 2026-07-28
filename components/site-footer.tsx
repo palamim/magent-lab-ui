@@ -3,7 +3,7 @@ import { FaGithub, FaXTwitter } from "react-icons/fa6";
 
 export function SiteFooter() {
   return (
-    <footer className="border-t border-black/10 font-sans">
+    <footer className="border-t border-black/10 bg-panel font-sans">
       <div className="mx-auto w-full max-w-3xl px-6 py-8 text-xs text-zinc-500 sm:px-8">
         <p className="leading-5">
           Studies are run in{" "}
